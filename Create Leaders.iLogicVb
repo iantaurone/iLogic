@@ -1,0 +1,296 @@
+﻿'The setup
+Dim invApp As Inventor.Application
+	invApp = ThisApplication
+Dim oDrawDoc As DrawingDocument
+	oDrawDoc  = ThisDoc.Document
+Dim oActiveSheet As Sheet
+	oActiveSheet = oDrawDoc.ActiveSheet
+Dim oSheet As Sheet
+	oSheet = oDrawDoc.ActiveSheet
+	
+Dim Xcoord = 62.25
+Dim Ycoord = 19.8
+'Dim LS = 0.4
+Dim oTG As Inventor.TransientGeometry = invApp.TransientGeometry
+Dim leaderPoints As ObjectCollection = invApp.TransientObjects.CreateObjectCollection()
+'E-Stop Start/Sop
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord - .3, Ycoord-.2))    'controls text location 
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord - 2.3, Ycoord + 1)) 'controls arrow location
+	Dim oNote As LeaderNote 
+		If Parameter("Start_Stop_EStop_on_HMI")= True Then
+			oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "E-STOP SWITCHES ")
+			leaderPoints.Clear()
+
+			leaderPoints.add(oTG.CreatePoint2d(oSheet.Width - Xcoord - .3, Ycoord - 1.2))          'controls text location
+			leaderPoints.add(oTG.CreatePoint2d(oSheet.Width - Xcoord - 2.5 , Ycoord + .5))  'controls arrow location
+			oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP" & vbCrLf & "SWITCHES")
+		Else
+		End If
+'____________________________________	
+'HMI
+	leaderPoints.Clear()
+	leaderPoints.add(oTG.CreatePoint2d(oSheet.Width - Xcoord - .3, Ycoord - 3))   'controls text locatipn
+	leaderPoints.add(oTG.CreatePoint2d(oSheet.Width - Xcoord - 4, Ycoord + .5))   'controls arrow location
+	
+	If Parameter("HMI_Size") = "7in"
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "7"" HMI")
+	Else If Parameter("HMI_Size") = "12in"
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "12"" HMI")
+	Else If Parameter("HMI_Size") = "N/A"
+	End If
+	
+'________________________________________	
+'Door and Stack Light
+	If Parameter("Stack_Lights") = True Then
+		leaderPoints.Clear()
+		leaderPoints.add(oTG.CreatePoint2d(oSheet.Width - Xcoord - 2, Ycoord + 20))   'controls text locatipn
+		leaderPoints.add(oTG.CreatePoint2d(oSheet.Width - Xcoord - 5, Ycoord + 17.2))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"R450" & vbCrLf & "door" & vbCrLf & "clearance")
+
+
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord + 5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 6.5, Ycoord + 7))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS")
+	Else 
+		leaderPoints.Clear()
+		leaderPoints.add(oTG.CreatePoint2d(oSheet.Width - Xcoord - 2, Ycoord + 14))   'controls text locatipn
+		leaderPoints.add(oTG.CreatePoint2d(oSheet.Width - Xcoord - 5, Ycoord + 11.2))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"R450" & vbCrLf & "door" & vbCrLf & "clearance")
+	End If
+	
+'______________________________________
+'Input Power
+	
+	If Parameter("Input_Power") = "110 V / 1 PH" Then
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord + 2.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 5.9, Ycoord + .5))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "110 V / 1 PH")
+	Else If Parameter("Input_Power") = "220 V / 1 PH" Then
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord + 2.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 5.9, Ycoord + .5))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 1 PH")
+	Else If Parameter("Input_Power") = "220 V / 3 PH" Then
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord + 2.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 5.9, Ycoord + .5))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 3 PH")
+	Else If Parameter("Input_Power") = "440 V / 3 PH" Then
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord + 2.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 5.9, Ycoord + .5))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "440 V / 3 PH")
+	End If
+	
+'_______________________________________
+'More Controls
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord + .1))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 8.3, Ycoord - 1.3))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"SERIAL LABEL")
+
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord - 2))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9, Ycoord - 3))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"INTERLOCKED" & vbCrLf & "MAIN POWER"  & vbCrLf & "DISCONNECT SWITCH")
+
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord - 4.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 8.3, Ycoord - 6.5))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"UL508A CERTIFIED" & vbCrLf & "ENCLOSURE"  & vbCrLf & "7MM TRIANGLE" & vbCrLf & "KEY LOCKED")
+'______________________________________
+'Controls Distance from Machine
+	If Parameter("Controls_Distance_from_Machine") = "5ft" Then
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord - 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 8.3, Ycoord - 9))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 5'")
+		oDrawDoc.Update()
+		
+	Else If Parameter("Controls_Distance_from_Machine") = "10ft" Then
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord - 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 8.3, Ycoord - 9))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 10'")
+		oDrawDoc.Update()
+		
+	Else If Parameter("Controls_Distance_from_Machine") = "15ft" Then
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord - 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 8.3, Ycoord - 9))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 15'")
+		oDrawDoc.Update()
+		
+	Else If Parameter("Controls_Distance_from_Machine") = "20ft" Then
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 9.9, Ycoord - 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 8.3, Ycoord - 9))   'controls arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 20'")
+		oDrawDoc.Update()
+		
+	Else If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+	End If
+	
+'____________________________________________
+'Lift Points
+	If Parameter("Amount_of_Conveyors") = 1
+		oDrawDoc.Update()
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+		
+	Else If Parameter("Amount_of_Conveyors") = 2
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32-Parameter("Conveyor_Length")/80, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30-Parameter("Conveyor_Length")/80, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+		
+	Else If Parameter("Amount_of_Conveyors") = 3
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32-Parameter("Conveyor_Length")/80, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30-Parameter("Conveyor_Length")/80, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32-Parameter("Conveyor_Length")*2/80, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30-Parameter("Conveyor_Length")*2/80, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+
+	Else If Parameter("Amount_of_Conveyors") = 4
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32-Parameter("Conveyor_Length")/80, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30-Parameter("Conveyor_Length")/80, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32-Parameter("Conveyor_Length")*2/80, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30-Parameter("Conveyor_Length")*2/80, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32-Parameter("Conveyor_Length")*3/80, Ycoord + 8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 30-Parameter("Conveyor_Length")*3/80, Ycoord + 11.3))   'controls LEFT arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINTS")
+	End If
+'_______________________________
+'Weigh Conveyor
+	If Parameter("Amount_of_Conveyors") = 1
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 36, Ycoord + 15))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 34.5, Ycoord + 14))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "STRAIN GAUGE" & vbCrLf & "(4 PLCS)")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 36.1, Ycoord + 17.8))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 34.9, Ycoord + 16.5))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "DRIVE" & vbCrLf & "GUARD")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 36.1, Ycoord + 16.3))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 35, Ycoord + 16))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø63,5")
+			
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 26.8, Ycoord + 16.3))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 27.8, Ycoord + 16))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø63,5")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 26.8, Ycoord + 18.1))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 28, Ycoord + 16.4))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SCALE"& vbCrLf & "PHOTOEYE")
+	Else
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 36, Ycoord + 15+1.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 34.5, Ycoord + 14))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "STRAIN GAUGE" & vbCrLf & "(4 PLCS)")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 36.1, Ycoord + 17.8+1.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 34.9, Ycoord + 16.5))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "DRIVE" & vbCrLf & "GUARD")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 36.1, Ycoord + 16.3+1.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 35, Ycoord + 16))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø63,5")
+			
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 26.8, Ycoord + 16.3+1.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 27.8, Ycoord + 16))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø63,5")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 26.8, Ycoord + 18.1+1.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 28, Ycoord + 16.4))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SCALE"& vbCrLf & "PHOTOEYE")
+	End If
+'_________________________________________
+'AC Motor
+	If Parameter("Amount_of_Conveyors") = 1
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 26.8, Ycoord + 28))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32, Ycoord + 26))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AC MOTOR")
+	Else
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 26.8 - Parameter("Conveyor_Length")*Parameter("Amount_of_Conveyors")/100, Ycoord + 28))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32 - Parameter("Conveyor_Length")*Parameter("Amount_of_Conveyors")/100, Ycoord + 26))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AC MOTOR")
+	End If
+	leaderPoints.Clear()
+	leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 35, Ycoord + 36))   'controls text locatipn
+	leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 32, Ycoord + 34.5))   'controls  arrow location
+	oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "HIGH / LOW"& vbCrLf & "VOLTAGE" & vbCrLf & "JUNCTION BOX")
+	
+	If Parameter("Amount_of_Conveyors") = 1
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 23.5, Ycoord + 34.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 21.5, Ycoord + 32.5))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "PATTERN" & vbCrLf & "ROTATIONAL")
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 17.8, Ycoord + 35))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 20.4, Ycoord + 33.95))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø15")
+		
+	Else If Parameter("Amount_of_Conveyors") > 1
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 23.5-Parameter("Conveyor_Length")*Parameter("Amount_of_Conveyors")/100, Ycoord + 34.5))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 21.5-Parameter("Conveyor_Length")*Parameter("Amount_of_Conveyors")/100, Ycoord + 32.5))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "PATTERN" & vbCrLf & "ROTATIONAL")
+		
+		leaderPoints.Clear()
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 17.8-Parameter("Conveyor_Length")*Parameter("Amount_of_Conveyors")/100, Ycoord + 35))   'controls text locatipn
+		leaderPoints.Add(oTG.CreatePoint2d(oSheet.Width - Xcoord + 20.4-Parameter("Conveyor_Length")*Parameter("Amount_of_Conveyors")/100, Ycoord + 33.95))   'controls  arrow location
+		oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø15")
+	End If
+'____________________________________________
+'Travel Direction
+	'Don't know how to include symbols
+	oDrawDoc.Update()
+'	With oNote
+'		.HorizontalJustification = Inventor.HorizontalTextAlignmentEnum.kAlignTextCenter
+'		.VerticalJustification = Inventor.VerticalTextAlignmentEnum.kAlignTextMiddle
+'		.TextStyle.FontSize = 0.203
+'	End With
+'End If
+'Next
+'End Sub
