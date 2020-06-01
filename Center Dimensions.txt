@@ -1,0 +1,21 @@
+﻿
+    ' Set a reference to the active drawing document
+    Dim oDoc As DrawingDocument
+     oDoc = ThisDoc.Document
+
+
+    ' Set a reference to the active sheet
+    Dim oSheet As Sheet
+     oSheet = oDoc.ActiveSheet
+
+    Dim oDrawingDim As DrawingDimension
+
+    ' Iterate over all dimensions in the drawing and
+    ' center them if they are linear or angular.
+
+    For Each oDrawingDim In oSheet.DrawingDimensions
+        If TypeOf oDrawingDim Is LinearGeneralDimension Or _
+           TypeOf oDrawingDim Is AngularGeneralDimension Then
+             oDrawingDim.CenterText
+       End If
+    Next
