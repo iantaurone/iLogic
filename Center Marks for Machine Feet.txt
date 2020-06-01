@@ -1,0 +1,47 @@
+﻿Dim oCenters As ObjectsEnumerator
+Dim oCLSettings As AutomatedCenterlineSettings
+Dim oDoc As DrawingDocument
+	oDoc = ThisApplication.ActiveDocument
+Dim oSheets As Sheets
+Dim oSheet As Sheet
+Dim oViews As DrawingViews
+Dim oView As DrawingView
+'capture the current active sheet
+Dim oCurrentNumber As Sheet
+oCurrentNumber = ThisDoc.Document.ActiveSheet
+'oSheet.Activate
+oSheets = ThisDoc.Document.Sheets
+For Each oSheet In oSheets
+'ActiveSheet = ThisDrawing.Sheet("OCD:1")
+'If ActiveSheet.Name = "OCD" Then'In oSheets
+	'oSheet.Activate
+	oViews = oSheet.DrawingViews
+		For Each oView In oViews
+		'If ActiveSheet.View("VIEW2").View
+			Dim orientype As ViewOrientationTypeEnum
+			orientype = oView.Camera.ViewOrientationType
+			If orientype = 10757 Then
+				oView.GetAutomatedCenterlineSettings(oCLSettings)
+				'set settings for the view
+				oCLSettings.ApplyToBends = False
+				oCLSettings.ApplyToCircularPatterns = False
+				oCLSettings.ApplyToCylinders = True
+				oCLSettings.ApplyToFillets = False
+				oCLSettings.ApplyToHoles = False
+				oCLSettings.ApplyToPunches = False
+				oCLSettings.ApplyToRectangularPatterns = False
+				oCLSettings.ApplyToRevolutions = False
+				oCLSettings.ApplyToWorkFeatures = False
+				oCLSettings.ApplyToBends = False
+				oCLSettings.ProjectionNormalAxis = True
+				oCLSettings.ProjectionParallelAxis = False
+				oCLSettings.CircularEdgeMinimumThreshold = 4 'I should include a multiplier to account for this value changing as the scale changes
+				oCLSettings.CircularEdgeMaximumThreshold = 4.5
+				'place centerlines
+				oCenters = oView.SetAutomatedCenterlineSettings(oCLSettings)
+			End If
+		Next
+Next
+'End If
+'activate the original current sheet
+oCurrentNumber.activate
