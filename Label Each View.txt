@@ -1,0 +1,73 @@
+Dim oDrawingDoc As DrawingDocument
+oDrawingDoc = ThisApplication.ActiveDocument
+Dim oSheet As Sheet
+oSheet = oDrawingDoc.ActiveSheet
+For Each oSheet In oDrawingDoc.Sheets
+	oViews = oSheet.DrawingViews
+	Dim oView As DrawingView
+	For Each oView In oViews
+				oView.ShowLabel = True
+				Dim orientype As ViewOrientationTypeEnum
+ 				orientype = oView.Camera.ViewOrientationType
+				If orientype = 10763 Then
+				oView.Label.FormattedText = "Arbitrary View"
+				End If
+				If orientype = 10756 Then
+				oView.Label.FormattedText = "Back View"
+				End If
+				If orientype = 10757  Then
+				oView.Label.FormattedText = "Bottom View"
+				End If
+				If orientype = 10765  Then
+				oView.Label.FormattedText = "Current View"
+				End If
+				If orientype = 10753 Then
+				oView.Label.FormattedText = "Specifies the Default setting To use. Inquiry methods/properties always Return the more strongly typed values"
+				End If
+				If orientype = 10773  Then
+				oView.Label.FormattedText = "Sheet metal flat pattern backside pivot 180 degrees"
+				End If
+				If orientype = 10772  Then
+				oView.Label.FormattedText = "Sheet metal flat pattern backside pivot left"
+				End If
+				If orientype = 10770  Then
+				oView.Label.FormattedText = "Sheet metal flat pattern backside"
+				End If
+				If orientype = 10769  Then
+				oView.Label.FormattedText = "Sheet metal flat pattern pivot 180 degrees"
+				End If
+				If orientype = 10768  Then
+				oView.Label.FormattedText = "Sheet metal flat pattern pivot left"
+				End If
+				If orientype =10767  Then
+				oView.Label.FormattedText = "Sheet metal flat pattern pivot right"
+				End If
+				If orientype = 10764  Then
+				oView.Label.FormattedText = "Front View"
+				End If
+				If orientype = 10762  Then
+				oView.Label.FormattedText = "Isometric -- Bottom Left View"
+				End If
+				If orientype = 10761  Then
+				oView.Label.FormattedText = "Isometric -- Bottom Right View"
+				End If
+				If orientype = 10760  Then
+				oView.Label.FormattedText = "Isometric -- Top Left View"
+				End If
+				If orientype = 10759   Then
+				oView.Label.FormattedText = "Isometric -- Top Right View"
+				End If
+				If orientype = 10758   Then
+				oView.Label.FormattedText = "Left View"
+				End If
+				If orientype = 10755   Then
+				oView.Label.FormattedText = "Right View"
+				End If
+				If orientype = 10766   Then
+				oView.Label.FormattedText = "Saved camera View"
+				End If
+				If orientype = 10754   Then
+				oView.Label.FormattedText = "Top View"
+				End If		
+	Next
+Next
