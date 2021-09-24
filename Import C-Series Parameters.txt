@@ -1,0 +1,13 @@
+﻿iLogicVb.Automation.ParametersXmlLoad(ThisDoc.Document, "C:\MCAD\Inventor\Templates\Basic C-Series Job Sheets_Rev3-params.xml")
+'Dim oDrawDoc As DrawingDocument 
+'	oDrawDoc = ThisApplication.ActiveDocument
+'Dim oSketchSymLib1 As SketchedSymbolDefinitionLibrary
+'Dim oSymDef1 As SketchedSymbolDefinition
+'	oSymbolDrawingName1 = "Drawing Disclaimer" 
+'	oSymbolDrawingName2 = "Customer Approval Block"
+'		'This grabs the library
+'			oSketchSymLib = oDrawDoc.SketchedSymbolDefinitions.SketchedSymbolDefinitionLibraries.Item(1)
+'		'This puts the Sketch Symbol into the Drawing Resource Folder
+'			oSymDef1 = oDrawDoc.SketchedSymbolDefinitions.AddFromLibrary(oSketchSymLib, oSymbolDrawingName1, True)
+'			oSymDef2 = oDrawDoc.SketchedSymbolDefinitions.AddFromLibrary(oSketchSymLib, oSymbolDrawingName2, True)
+		

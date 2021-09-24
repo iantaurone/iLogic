@@ -1,0 +1,151 @@
+﻿
+'Get the drawing document
+Dim oDrawingDocument As Inventor.DrawingDocument
+  oDrawingDocument = ThisApplication.ActiveDocument
+	Dim oSheet As Sheet = oDrawingDocument.ActiveSheet
+Dim oDoc As DrawingDocument = ThisApplication.ActiveDocument
+	oSheet.Activate
+Dim oSheets As Sheets = ThisDoc.Document.Sheets
+'Dim oSheet As Sheet
+Dim oViews As DrawingViews = oSheet.DrawingViews
+'Create For loop to turn off visibility for each view
+''messagebox.Show(activesheet.name)
+'If ActiveSheet.Name = "OCD:1" Then
+'	If Parameter("Pulley") = "SM" Then
+'		'For Each oView In oViews
+'		For k = 2 To 6
+			'Dim oView As Inventor.DrawingView
+'		  	oView = oDrawingDocument.ActiveSheet.DrawingViews.Item(k)
+'		'MessageBox.Show(oView.Name)
+'			'Get the assembly document referenced By the view
+'				Dim oAssemblyDocument As Inventor.AssemblyDocument
+'			 	oAssemblyDocument = oView.ReferencedDocumentDescriptor.ReferencedDocument'ActivePresentationView.Contains("63053373")
+'			'Get the second component occurrence of the assembly document
+'			Dim oMotorSearch As Inventor.ComponentOccurrence
+'			For j As Integer = 1 To 150 'search for asssembly
+'			 	oMotorSearch = oAssemblyDocument.ComponentDefinition.Occurrences.Item(j) '10
+'				If oMotorSearch.Name = ("66044234:2") Or oMotorSearch.Name = ("63053373:2") Then
+'					'MessageBox.Show("here")
+'					oView.SetVisibility(oMotorSearch, True)
+'					Exit For
+'				End If
+'			Next 'end assembly search For loop
+'			Dim oLoadCellGuardSearch As Inventor.ComponentOccurrence
+'		'Next 'end view's For loop		
+			
+'		'Load Cell Guard	
+'			For j As Integer = 1 To 250 'search for asssembly
+'			 	oLoadCellGuardSearch = oAssemblyDocument.ComponentDefinition.Occurrences.Item(j) '10
+'				If Parameter("Travel_Direction") = "Right to Left"' And oView.Name = "FrontScaleView" Then
+'					If oLoadCellGuardSearch.Name = ("LoadCellGuard:RH:1") Then
+'						' MessageBox.Show("here")
+'						oView.SetVisibility(oLoadCellGuardSearch, False)
+'						Exit For
+'					End If
+'				Else If Parameter("Travel_Direction") = "Left to Right" 'And oView.Name = "FrontScaleView" Then
+'					If oLoadCellGuardSearch.Name = ("LoadCellGuard:LH:1") Then
+'					'	 MessageBox.Show("here")
+'						oView.SetVisibility(oLoadCellGuardSearch, False)
+'						Exit For
+'					End If
+'				Else
+'					'do nothing
+'				End If
+'			Next 'end assembly search For loop
+'		Next 'end view's For loop
+'	Else 'if large pulley
+''			Dim oAssemblyDocument As Inventor.AssemblyDocument
+''			 	oAssemblyDocument = oView.ReferencedDocumentDescriptor.ReferencedDocument'ActivePresentationView.Contains("63053373")
+''			'Get the second component occurrence of the assembly document
+''			Dim oMotorSearch As Inventor.ComponentOccurrence
+''		For j As Integer = 1 To 250 'search for asssembly
+''			Dim oLoadCellGuardSearch As Inventor.ComponentOccurrence
+''		 	oLoadCellGuardSearch = oAssemblyDocument.ComponentDefinition.Occurrences.Item(j) '10
+''			If Parameter("Travel_Direction") = "Right to Left"' And oView.Name = "FrontScaleView" Then
+''				If oLoadCellGuardSearch.Name = ("LoadCellGuard:RH:1") Then
+''					' MessageBox.Show("here")
+''					oView.SetVisibility(oLoadCellGuardSearch, False)
+''					Exit For
+''				End If
+''			Else If Parameter("Travel_Direction") = "Left to Right" 'And oView.Name = "FrontScaleView" Then
+''				If oLoadCellGuardSearch.Name = ("LoadCellGuard:LH:1") Then
+''				'	 MessageBox.Show("here")
+''					oView.SetVisibility(oLoadCellGuardSearch, False)
+''					Exit For
+''				End If
+''			Else
+''				'do nothing
+''			End If
+''		Next 'end assembly search For loop
+'	End If 'for  pulley	
+
+	'Controls Main Power Switch
+		For m = 2 To 20
+			'Dim oView As Inventor.DrawingView
+		  	oView = oDrawingDocument.ActiveSheet.DrawingViews.Item(m)
+			'Get the assembly document referenced By the view
+				Dim oAssemblyDocument As Inventor.AssemblyDocument
+			 	oAssemblyDocument = oView.ReferencedDocumentDescriptor.ReferencedDocument'ActivePresentationView.Contains("63053373")
+			For j As Integer = 1 To 100 'search for asssembly
+			 	oPowerSwitchSearch = oAssemblyDocument.ComponentDefinition.Occurrences.Item(j) '10
+				If oPowerSwitchSearch.Name = ("66081996:1") Then
+					oView.SetVisibility(oPowerSwitchSearch, True)
+					Exit For
+				End If
+			Next 'end assembly search For loop
+		Next
+'Else If ActiveSheet.Name = "Exploded Drawing:2" Then
+'	Dim oPresentationDocument As Inventor.PresentationDocument
+'	oPresentationDocument = ThisApplication.ActiveDocument
+'		For k = 1 To 2
+'	'	Dim oView As Inventor.DrawingView
+'		'oView = oPresentationDocument.ActiveScene.SnapshotViews.'.ClientViews.Item(k)
+'		'MessageBox.Show(oView)
+'	  	oView = oDrawingDocument.ActiveSheet.DrawingViews.Item(k)
+'	 	'MessageBox.Show(oView.Name)
+	 
+'		'Get the assembly document referenced By the view
+'		Dim oAssemblyDocument As Inventor.AssemblyDocument
+'		'For m As Integer = 1 To 50
+'			'oExplodedDocument = oView.ActivePresentationView.Contains("63053373:2") = True
+'		'	MessageBox.Show()
+'		  oAssemblyDocument = oView.ReferencedDocumentDescriptor.ReferencedDocument
+'		  messagebox.Show("past oassembly")
+'		'Get the second component occurrence of the assembly document
+'		Dim oWeighConveyor As Inventor.ComponentOccurrence
+'		Dim oCableSearch As Inventor.ComponentOccurrence
+'	'Create a for loop to find assembly
+'		For j As Integer = 1 To 10 'search for asssembly
+'		 	oWeighConveyor = oAssemblyDocument.ComponentDefinition.Occurrences.Item(j) '10
+'			MessageBox.Show(j & "       " & oWeighConveyor.Name)
+'			If oWeighConveyor.Name = "Weigh Conveyor" Then
+'			'Create For loop to find part
+'				For i As Integer = 1 To 100 'search for motor cable
+'					oCableSearch = oWeighConveyor.SubOccurrences.Item(i) '2
+'					If oCableSearch.Name = "63053373:2"  Then
+'						'Turn off visibility
+'							oView.SetVisibility(oCableSearch, False)
+'						Exit For
+'					End If
+'				Next 'end part search For loop
+'				Exit For
+'			End If
+			
+''			If oWeighConveyor.Name = "WeighingConveyor" Then
+''			'Create For loop to find part
+''				For i As Integer = 50 To 60 'search for motor cable
+''					oCableSearch = oWeighConveyor.SubOccurrences.Item(i) '2
+''					'MessageBox.Show(i & "       " & oCableSearch.Name)
+''					If oCableSearch.Name = "GA-000028683:1" Then
+''						'Turn off visibility
+''						'MessageBox.show("inside")
+''							oView.SetVisibility(oCableSearch, False)
+''						Exit For
+''					End If
+''				Next 'end part search For loop
+''				Exit For
+''			End If
+'		Next 'end assembly search For loop
+'	Next 'end view's For loop
+'End If
+'

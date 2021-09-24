@@ -1,0 +1,77 @@
+﻿'Get the drawing document
+Dim oDrawingDocument As Inventor.DrawingDocument
+  oDrawingDocument = ThisApplication.ActiveDocument
+'Create For loop to turn off visibility for each view
+	For k = 1 To 6
+		Dim oView As Inventor.DrawingView
+	  	oView = oDrawingDocument.ActiveSheet.DrawingViews.Item(k)
+	 	'MessageBox.Show(oView.Name)
+	 
+		'Get the assembly document referenced By the view
+		Dim oAssemblyDocument As Inventor.AssemblyDocument
+		  oAssemblyDocument = oView.ReferencedDocumentDescriptor.ReferencedDocument
+		'Get the second component occurrence of the assembly document
+		Dim oWeighConveyor As Inventor.ComponentOccurrence
+		Dim oCableSearch As Inventor.ComponentOccurrence
+		Dim oFoot As Inventor.ComponentOccurrence
+			Dim oFootDef As AssemblyComponentDefinition = oAssemblyDocument.ComponentDefinition
+			Dim oFootAxis As WorkAxis 
+			Dim oFootPoint As Point2d
+			Dim oFootRadius1 As Point2d
+			Dim oFootRadius2 As Point2d		
+			Dim oDetailVoew As DetailDrawingView
+			Dim oSheet As Sheet = oView.Parent
+	'Create a for loop to find assembly
+		For j As Integer = 1 To 50 'search for asssembly
+		 	oWeighConveyor = oAssemblyDocument.ComponentDefinition.Occurrences.Item(j) '10
+			'MessageBox.Show(j & "       " & oWeighConveyor.Name)
+			If oWeighConveyor.Name = "WeighingConveyor.Support" Or oWeighConveyor.Name = "WC Support" Or oWeighConveyor.Name = "Weigh Conveyor and Support" Then
+			'Create For loop to find part
+				For i As Integer = 1 To 50 'search for motor cable
+					oCableSearch = oWeighConveyor.SubOccurrences.Item(i) '2
+					'MessageBox.Show(i & "       " & oCableSearch.Name)
+					If oCableSearch.Name = "MotorCable"  Or oCableSearch.Name = "GA-24104186:1" Then
+						'Turn off visibility
+							oView.SetVisibility(oCableSearch, False)
+						Exit For
+					End If
+				Next 'end part search For loop
+				On Error Resume Next
+				Exit For
+			End If
+			
+			If oWeighConveyor.Name = "WeighingConveyor" Then
+			'Create For loop to find part
+				For i As Integer = 50 To 60 'search for motor cable
+					oCableSearch = oWeighConveyor.SubOccurrences.Item(i) '2
+					'MessageBox.Show(i & "       " & oCableSearch.Name)
+					If oCableSearch.Name = "GA-000028683:1" Then
+						'Turn off visibility
+						'MessageBox.show("inside")
+							oView.SetVisibility(oCableSearch, False)
+						Exit For
+					End If
+				Next 'end part search For loop
+				Exit For
+			End If
+'			If oView.Name = "BottomView" Then
+'				For i As Integer = 1 To 50
+'					oFoot = oAssemblyDocument.ComponentDefinition.Occurrences.Item(i)
+'					If oFoot.Name = "Foot_2" Then	
+'						oFootPoint = oFootDef.WorkPoint.Item("CenterPoint")
+						
+'						oFootRadius1.X = oFootPoint.X - 1
+'						oFootRadius1.Y = oFootPoint.Y - 1
+'						oView.ModelToDrawingViewSpace(oFootPoint)
+'						messagebox.Show("Here")
+''						oFootRadius2.X = oFootPoint.X + 1
+''						oFootRadius2.Y = oFootPoint.Y + 1	
+''						oFootPoint = oView.ModelToSheetSpace(oFootAxis)
+''						oDetailView = oSheet.DrawingViews.AddDetailView(oView, oFootPoint, kFromBaseDrawingViewStyle, True, oFootRadius1, oFootRadius2)
+'						Exit For
+'					End If
+'				Next
+'			End If
+			
+		Next 'end assembly search For loop
+	Next 'end view's For loop

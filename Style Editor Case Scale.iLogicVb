@@ -1,0 +1,34 @@
+﻿Dim oDoc As DrawingDocument
+	oDoc = ThisApplication.ActiveDocument
+Dim oDim As GeneralDimension
+'Dim invApp As Inventor.Application = ThisApplication
+'Dim oDrawDoc As DrawingDocument = ThisDoc.Document
+
+'Dim oActiveSheet As Sheet = oDrawDoc.ActiveSheet
+
+'Dim oCurrentNumber As Sheet = ThisDoc.Document.ActiveSheet
+'Dim oSheet As Sheet = oDrawDoc.ActiveSheet
+'Dim oCenters As ObjectsEnumerator
+'Dim oCLSettings As AutomatedCenterlineSettings
+''Dim oDoc As DrawingDocument = ThisApplication.ActiveDocument
+'	oSheet.Activate
+'Dim oSheets As Sheets = ThisDoc.Document.Sheets
+
+'Dim oViews As DrawingViews = oSheet.DrawingViews
+
+'Dim oView As DrawingView 
+'Dim orientype =ViewOrientationTypeEnum'oView.Camera.ViewOrientationType	
+	'Default Standard (MTPI)
+''Change Precision for C-Series
+'Default (MTPI)
+'oDoc.StylesManager.ActiveStandardStyle = oDoc.StylesManager.DimensionStyles("Default Standard (MTPI)") 'Then
+'	oDoc.StylesManager.DimensionStyles("Default Standard (MTPI)").LinearPrecision = 41730
+oDoc.StylesManager.ActiveStandardStyle = oDoc.StylesManager.StandardStyles("Default Standard (MTPI)") 'Then
+	oDoc.StylesManager.DimensionStyles("Default (MTPI)").LinearPrecision = 41730
+'oDoc.StylesManager.ActiveStandardStyle = oDoc.StylesManager.StandardStyles("MT-ISO")
+	'oDoc.StylesManager.DimensionStyles("Default (ISO)").LinearPrecision = 41730
+'Else
+'	MessageBox.Show("nothing changed")
+'End If
+
+	'	oDoc.StylesManager.DimensionStyles("Default (MTPI)").AlternateLinearPrecision = 41731'.ToleranceLinearPrecision = 41731

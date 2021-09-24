@@ -1,0 +1,18 @@
+﻿Dim oDoc As DrawingDocument
+	oDoc = ThisApplication.ActiveDocument
+	
+Dim oDim As GeneralDimension
+
+
+
+'If oDoc.StylesManager.ActiveStandardStyle Is 
+'oDoc.StylesManager.StandardStyles("Default (MT-ISO)")' Then
+	oDoc.StylesManager.DimensionStyles("Default (MT-ISO)").LinearPrecision = 41729
+	oDoc.StylesManager.BalloonStyles("Balloon (MT-ISO)").LeaderStyle.ArrowheadType = 71941 'kFilledArrowheadType '
+	oDoc.StylesManager.DimensionStyles("Default (MT-ISO)").OriginOffset = .1
+'Else 'If oDoc.StylesManager.ActiveStandardStyle = "Default Standard (MTPI)" Then
+'	oDoc.StylesManager.DimensionStyles("Default (MT-ISO)").LinearPrecision = 41729
+'	oDoc.StylesManager.BalloonStyles("Balloon (MT-ISO)").LeaderStyle.ArrowheadType = 71941 'kFilledArrowheadType '
+'	oDoc.StylesManager.DimensionStyles("Default (MT-ISO)").OriginOffset = .1
+'End If
+

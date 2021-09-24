@@ -1,0 +1,21 @@
+﻿Dim oView As DrawingView
+
+oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Front View")
+oView.Name = oView.Name.Replace(oView.Name, "FrontView")
+
+oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Top View")
+oView.Name = oView.Name.Replace(oView.Name, "TopView")
+
+oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Bottom View")
+oView.Name = oView.Name.Replace(oView.Name, "BottomView")
+
+oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Right View")
+oView.Name = oView.Name.Replace(oView.Name, "RightView")
+
+oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Left View")
+oView.Name = oView.Name.Replace(oView.Name, "LeftView")
+
+oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The ISO Top Left View")
+oView.Name = oView.Name.Replace(oView.Name, "ISOTopLeftView")
+
+

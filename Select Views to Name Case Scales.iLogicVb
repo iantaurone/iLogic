@@ -1,0 +1,78 @@
+﻿Dim oView As DrawingView
+ControlsOpt = MessageBox.Show("Are the controls free standing?","Controls Question" ,MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question)
+
+If ControlsOpt = vbNo Then
+	oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Front View")
+	oView.Name = oView.Name.Replace(oView.Name, "FrontScaleView")
+
+	oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Top View")
+	oView.Name = oView.Name.Replace(oView.Name, "TopScaleView")
+
+	oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Bottom View")
+	oView.Name = oView.Name.Replace(oView.Name, "BottomScaleView")
+
+	oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Right View")
+	oView.Name = oView.Name.Replace(oView.Name, "RightScaleView")
+
+	oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Left View")
+	oView.Name = oView.Name.Replace(oView.Name, "LeftScaleView")
+
+	oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The ISO Top Left View")
+	oView.Name = oView.Name.Replace(oView.Name, "ISOTopLeftView")
+
+Else If ControlsOpt = vbYes Then
+	'Scale
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Front View")
+		oView.Name = oView.Name.Replace(oView.Name, "FrontScaleView")
+
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Top View")
+		oView.Name = oView.Name.Replace(oView.Name, "TopScaleView")
+
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Bottom View")
+		oView.Name = oView.Name.Replace(oView.Name, "BottomScaleView")
+
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Right View")
+		oView.Name = oView.Name.Replace(oView.Name, "RightScaleView")
+
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Scale's Left View")
+		oView.Name = oView.Name.Replace(oView.Name, "LeftScaleView")
+
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The ISO Top Left View")
+		oView.Name = oView.Name.Replace(oView.Name, "ISOTopLeftView")
+	
+	'Controls
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Controls's Front View")
+		oView.Name = oView.Name.Replace(oView.Name, "FrontControlsView")
+
+'		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Controls's Top View")
+'		oView.Name = oView.Name.Replace(oView.Name, "TopControlsView")
+
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Controls's Bottom View")
+		oView.Name = oView.Name.Replace(oView.Name, "BottomControlsView")
+
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Controls's Right View")
+		oView.Name = oView.Name.Replace(oView.Name, "RightControlsView")
+
+End If
+
+RejectorOpt = MessageBox.Show("Is there a free standing rejector?","Rejector Question" ,MessageBoxButtons.YesNoCancel,MessageBoxIcon.Question)
+
+If ControlsOpt = vbNo Then
+	'Do nothing
+Else If ControlsOpt = vbYes Then
+	'Rejector
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Rejector's Front View")
+		oView.Name = oView.Name.Replace(oView.Name, "FrontRejectorView")
+
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Rejector's Top View")
+		oView.Name = oView.Name.Replace(oView.Name, "TopRejectorView")
+
+'		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Rejector's Bottom View")
+'		oView.Name = oView.Name.Replace(oView.Name, "BottomRejectorView")
+
+'		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Rejector's Right View")
+'		oView.Name = oView.Name.Replace(oView.Name, "RightRejectorView")
+
+		oView = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingViewFilter, "Select The Rejector's Left View")
+		oView.Name = oView.Name.Replace(oView.Name, "LeftRejectorView")
+End If

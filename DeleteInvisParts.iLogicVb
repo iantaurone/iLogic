@@ -1,0 +1,186 @@
+﻿oComps = ThisDoc.Document.ComponentDefinition.Occurrences
+
+For Each oComp In oComps
+    If Not oComp.Visible Then
+        oComp.Delete
+    End If
+Next
+
+If BeltSpeed = "30 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("63053373:2") = True
+
+Else If BeltSpeed = "40 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("63053373:2") = True
+
+Else If BeltSpeed = "50 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("63053373:2") = True
+
+Else If BeltSpeed = "60 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("63053373:2") = True
+
+Else If BeltSpeed = "70 FPM" Then
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("66044234:2") = True
+
+Else If BeltSpeed = "80 FPM" Then
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("66044234:2") = True
+
+Else If BeltSpeed = "90 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("66044234:2") = True
+
+Else If BeltSpeed = "100 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("66044233:2") = True
+
+Else If BeltSpeed = "120 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("66044233:2") = True
+
+Else If BeltSpeed = "140 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("66044233:2") = True
+
+Else If BeltSpeed = "150 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("66044233:2") = True
+
+Else If BeltSpeed = "160 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("66044233:2") = True
+
+Else If BeltSpeed = "180 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+compo4 = Component.InventorComponent("66044232:1")
+compo4.Delete
+Component.Visible("66044233:2") = True
+
+Else If BeltSpeed = "200 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+
+Component.Visible("66044232:1") = True
+
+Else If BeltSpeed = "220 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+
+Component.Visible("66044232:1") = True
+
+Else If BeltSpeed = "240 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+
+Component.Visible("66044232:1") = True
+
+Else If BeltSpeed = "260 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+
+Component.Visible("66044232:1") = True
+
+Else If BeltSpeed = "280 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+
+Component.Visible("66044232:1") = True
+
+Else If BeltSpeed = "300 FPM" Then
+compo1 = Component.InventorComponent("66044234:2")
+compo1.Delete
+compo2 = Component.InventorComponent("66044233:2")
+compo2.Delete
+compo3 = Component.InventorComponent("63053373:2")
+compo3.Delete
+Component.Visible("66044232:1") = True
+
+End If
+iLogicVb.UpdateWhenDone = True

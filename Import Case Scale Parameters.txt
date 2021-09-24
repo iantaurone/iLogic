@@ -1,0 +1,1 @@
+﻿iLogicVb.Automation.ParametersXmlLoad(ThisDoc.Document, "C:\MCAD\Inventor\Templates\Basic Case Scale-params.xml")

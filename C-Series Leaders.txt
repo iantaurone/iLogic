@@ -1,0 +1,2436 @@
+﻿Imports Inventor.ViewOrientationTypeEnum
+Imports Inventor.DrawingViewStyleEnum
+Imports Inventor.DrawingViewTypeEnum
+Imports Inventor.PointIntentEnum
+'<%%Icon ("File-Drawing-idw.ico")> Design C3_DrawingDocument : C3_Drawing IvDrawingDocument
+	
+	
+'###########################################
+'# Parameters
+'###########################################
+	
+	'Parameter Rule ViewModel As Part = NoValue
+	
+	'Parameter Rule Sheet_Cable? As Boolean = False 
+	
+Imports Inventor.DimensionTypeEnum
+Imports Inventor.DrawingCurveSegmentEnum
+Imports Inventor.DrawingCurveEnum
+Imports Inventor.CurveTypeEnum
+'----------------SETUP-------------------
+'[	
+Dim invApp As Inventor.Application
+	invApp = ThisApplication
+Dim oDrawDoc As DrawingDocument
+	oDrawDoc  = ThisDoc.Document
+Dim oActiveSheet As Sheet
+	oActiveSheet = oDrawDoc.ActiveSheet
+Dim oSheet As Sheet
+	oSheet = oDrawDoc.ActiveSheet
+Dim oView As DrawingView
+	Dim oTopView As DrawingView'
+	Dim oBottomView As DrawingView
+	Dim oLeftView As DrawingView
+	Dim oRightView As DrawingView
+	Dim oFrontView As DrawingView
+Dim oDrawingViews As DrawingViews 
+Dim oView3 As DrawingView			
+Dim oView2 As DrawingView
+Dim orientype0 As ViewOrientationTypeEnum
+Dim oPartDoc As Document
+Dim oTG As Inventor.TransientGeometry = invApp.TransientGeometry
+Dim leaderPoints As ObjectCollection = invApp.TransientObjects.CreateObjectCollection()
+Dim oNote As LeaderNote 
+
+'Dim ReferenceModel As Inventor.TransientObjects 
+
+']
+'_______________________________________________________________________________________________________________________________________________________
+'-------------Drawing Views----------------
+	'Name Views
+		'[
+			'modelName = IO.Path.GetFileName(ActiveSheet.View("VIEW1").ModelDocument.FullFileName)
+			
+		']
+		
+	'Delete Views
+		'[
+			'If oView.Name
+			For Each oView In oDrawDoc.ActiveSheet.DrawingViews
+				If oView.Name.Contains("ISOTopRightView") Then
+					oView.Delete 
+				Else 'do nothing	
+				End If
+			Next
+			
+			For Each oView In oDrawDoc.ActiveSheet.DrawingViews
+				If oView.Name.Contains("TopView_with_hidden_parts") Then
+					oView.Delete 
+				Else 'do nothing	
+				End If
+			Next
+		']
+		
+	'Move and Size Views
+		'[
+		'If			
+		X_Pos = 42
+		Y_Pos = 32
+		X_Pos_Left = X_Pos -21
+		X_Pos_Right = X_Pos +21
+		Y_Pos_Top = Y_Pos +17
+		Y_Pos_Bottom = Y_Pos -19
+			
+		'Define 2d views
+		oPoint1 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos, Y_Pos)			' Centre View
+		
+		If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+			If Parameter("Mounted_Controls_Enclosure") = "On the Front" And Parameter("Stack_Lights") = "N/A" Then
+				oPoint2 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos, Y_Pos_Bottom+2)	' Top View
+			Else 'If Parameter("Mounted_Controls_Enclosure") = "On the Front" Or Parameter("Mounted_Controls_Enclosure") = "On the Back" And Parameter("Stack_Lights") <> "N/A" Then
+				oPoint2 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos, Y_Pos_Bottom-1)	' Top View
+			End If
+		Else 'if its free standing
+			oPoint2 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos, Y_Pos_Bottom-1)	' Top View
+		End If
+		
+		If Parameter("Mounted_Controls_Enclosure") = "On the Back" Then
+			oPoint3 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos_Right + 8, Y_Pos)	' Right Hand View
+		Else If Parameter("Mounted_Controls_Enclosure") = "On the Front"  'And Parameter("MD_Present") = False
+			oPoint3 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos_Right, Y_Pos)	' Right Hand View
+		Else 'If Parameter("Mounted_Controls_Enclosure") = "On the Front" And Parameter("MD_Present") =  True 'if its free standing
+			oPoint3 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos_Right + 6, Y_Pos)	' Right Hand View
+		End If
+		
+		oPoint4 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos, Y_Pos_Top)		' Bottom View
+		
+		If Parameter("Controls_Distance_from_Machine") = "0ft" And Parameter("MD_Present") = False Then
+			oPoint5 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos_Left, Y_Pos)	' Left Hand View
+		Else 'If Parameter("Controls_Distance_from_Machine") <> "0ft" And Parameter("MD_Present") = False Or Parameter("MD_Present") = True Then'if free standing controls or if really wide
+			oPoint5 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos_Left-6, Y_Pos)	' Left Hand View
+		End If
+		oPoint6 = ThisApplication.TransientGeometry.CreatePoint2d(X_Pos_Left, Y_Pos_Top)' Top Left Hand ISO View
+		oPoint7 = ThisApplication.TransientGeometry.CreatePoint2d(77, 53)				' Top Left Hand ISO View
+		oBasePosition = ThisApplication.TransientGeometry.CreatePoint2d()
+		BaseScale = 0.125
+			For Each oView In oDrawDoc.ActiveSheet.DrawingViews
+				If oView.Name.Contains("FrontView") Then
+					oFrontView = oView
+					oView.Scale = 0.125
+						If Parameter("Stack_Lights") <> "N/A" Or Parameter("Controls_Distance_from_Machine") <> "0ft" Then
+							oView.Scale = 0.1
+						Else  'Do nothing
+						End If
+					oView.Position = oPoint1	
+					'oView.Name = "FrontView"
+				End If	
+				
+				If oView.Name.Contains("TopView") Then
+					oTopView = oView
+					oView.ScaleFromBase = True
+					oBasePosition.X = 31.5
+					oBasePosition.Y = 9-5
+					oView.Position = oPoint2
+					'MsgBox(oView.Height,,"Top View Height")
+				End If
+						
+				If oView.Name.Contains("RightView") Then
+					oRightView = oView
+					oView.ScaleFromBase = True
+					oView.Position = oPoint3
+				End If		
+				
+				If oView.Name = ("LeftView") Then
+					oLeftView = oView
+					oView.ScaleFromBase = True
+					oView.Position = oPoint5					
+				End If		
+
+				If oView.Name.Contains("ISOTopLeftView") Then
+					oBasePosition.X = 77
+					oBasePosition.Y = 53
+					oView.Position = oPoint7
+					oView.Scale = 0.065
+					'MsgBox(oView.Width)
+					If oView.Height > 10 Or oView.Width > 10 Then
+						oView.Scale = 0.05
+					Else 'Do nothing
+					End If	
+					'MsgBox(oView.Height)
+				End If
+			Next
+		']
+		
+'	Create View
+		'[
+			oDrawingViews = ThisApplication.ActiveDocument.Sheets.Item(1).DrawingViews
+				oView3 = oDrawingViews.Item(1)'Front View
+				'oView3.ModelToDrawingViewSpace
+					If oView.Name.Contains("BottomView") Then
+						'do nothing if there is already a view named "Bottom View"
+					Else
+						oView2 = oSheet.DrawingViews.AddProjectedView(oView3, oPoint4, DrawingViewStyleEnum.kHiddenLineRemovedDrawingViewStyle)
+						oView2.Name = "BottomView"
+					End If
+			'Detail
+				   oView4 = ActiveSheet.View("BottomView").View
+				   oBottomView = oView4
+'				   Dim DPP As Point2d = ThisApplication.TransientGeometry.CreatePoint2d(oBottomView.Center.X-(oBottomView.Width/2)+2, oBottomView.Center.Y-oBottomView.Height/4)
+'				   Dim oPointDetail As Point2d
+'				   Dim DCP As Point2d
+'						DCP = ThisApplication.TransientGeometry.CreatePoint2d(35,55)
+						
+'				   		oPointDetail = oView3.Center
+'   						 oPointDetail.X = oPointDetail.X - oView3.Width*.5
+'				    Dim oCurve As DrawingCurve
+'				    Dim oArcCurve As DrawingCurve
+					
+'				    For Each oCurve In oBottomView.DrawingCurves
+'				        If oCurve.CurveType = kCircularArcCurve Then
+'				             oArcCurve = oCurve
+'				           ' Exit For
+'				        End If
+'				    Next
+					
+'					If Not oArcCurve Is Nothing Then
+'				        ' Use the range of the arc in sheet space to calculate the detail view box.
+'				        Dim oCornerOne As Point2d
+'					        oCornerOne = oArcCurve.Evaluator2D.RangeBox.MinPoint
+'					        oCornerOne.X = oCornerOne.X - 1
+'					        oCornerOne.Y = oCornerOne.Y - 1
+				        
+'				        Dim oCornerTwo As Point2d
+'					        oCornerTwo = oArcCurve.Evaluator2D.RangeBox.MaxPoint
+'					        oCornerTwo.X = oCornerTwo.X + 1
+'					        oCornerTwo.Y = oCornerTwo.Y + 1
+				        
+'				        ' Create the detail view with a rectangular box.
+'				        Dim oDetailView As DetailDrawingView
+'				        	oDetailView = oSheet.DrawingViews.AddDetailView(oDrawingView, oPoint, _
+'				       		kFromBaseDrawingViewStyle, False, oCornerOne, oCornerTwo, , oDrawingView.Scale * 2)
+'			   		Else
+'			        	MsgBox("No arc was found in the selected drawing view.")
+'			    	End If	 
+					' Dim oCurveSeg As DrawingCurveSegment
+   						'oCurveSeg = ThisApplication.CommandManager.Pick(SelectionFilterEnum.kDrawingCurveSegmentFilter, "Pick")
+    				'Dim oCenterPoint As Point2d
+    				'	oCenterPoint = oCurveSeg.StartPoint
+						'oCenterPoint.X = oPointDetail.X 
+						'oCenterPoint.Y = oPointDetail.Y' + oView4.Height*.5
+					'xTopView = (oView.Width * .5) + oPoint2.X
+					'yTopView = (oView.Height * .5)
+					ViewWidth  = oView3.Width
+					ViewHeight = oView3.Height
+					oFrontViewRight = oFrontView.Left+oFrontView.Width
+'						MsgBox(oView3.Height)
+'						MsgBox(oView3.Width)
+						'(oView2, DPP, kFromBaseDrawingViewStyle, True, DCP, 0.5, , oView2.Scale * 2, True, "A")		
+				 	'	oDetailView = oSheet.DrawingViews.AddDetailView(oView3, DDP, kHiddenLineRemovedDrawingViewStyle, True, oCenterPoint, 1, , oView3.Scale*2, True, "Detail A")
+				'
+		']
+		
+'__________________________________________________________________________________________________________________________________________________________
+''-------------Sketch Symbol Blocks---------
+	'All Sketch Symbol Blocks
+		'[
+			'Add Symbols to Local Library
+				'[
+				Dim oSketchSymLib1 As SketchedSymbolDefinitionLibrary
+				Dim oSymDef1 As SketchedSymbolDefinition
+					oSymbolDrawingName1 = "Drawing Disclaimer" 
+					oSymbolDrawingName2 = "Customer Approval Block"
+					oSymbolDrawingName3 = "TD-le-ri"
+					oSymbolDrawingName4 = "TD-ri-le"
+					oSymbolDrawingName5 =  "Order-no"
+			'This grabs the library
+				oSketchSymLib = oDrawDoc.SketchedSymbolDefinitions.SketchedSymbolDefinitionLibraries.Item(1)
+						'	MsgBox(oSketchSymLib.Name)
+			'This puts the Sketch Symbol into the Drawing Resource Folder
+				oSymDef1 = oDrawDoc.SketchedSymbolDefinitions.AddFromLibrary(oSketchSymLib, oSymbolDrawingName1, True)
+				oSymDef2 = oDrawDoc.SketchedSymbolDefinitions.AddFromLibrary(oSketchSymLib, oSymbolDrawingName2, True)
+				oSymDef3 = oDrawDoc.SketchedSymbolDefinitions.AddFromLibrary(oSketchSymLib, oSymbolDrawingName3, True)
+				oSymDef4 = oDrawDoc.SketchedSymbolDefinitions.AddFromLibrary(oSketchSymLib, oSymbolDrawingName4, True)
+				oSymDef5 = oDrawDoc.SketchedSymbolDefinitions.AddFromLibrary(oSketchSymLib, oSymbolDrawingName5, True)
+				']
+			'Delete or Move Symbols
+				'[
+				If Parameter("Sketch_Symbol_Locations") = "Corners" Or Parameter("Sketch_Symbol_Locations") = "Bottom Right" Then
+					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+						If oSymbol.Name = "Guarding Note - Machinery Directive" Then
+							oSymbol.Delete 
+					'	Else 'Do nothing
+						End If
+					Next
+					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+						If oSymbol.Name = "Drawing Disclaimer" Then
+							oSymbol.Delete
+					'	Else 'Do nothing
+						End If
+					Next
+					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+						If oSymbol.Name = "Customer Approval Block" Then
+							oSymbol.Delete
+						'Else 'Do nothing
+						End If
+					Next
+					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+						If oSymbol.Name = "Copyright Protection notice" Then
+							oSymbol.Delete
+					'	Else 'Do nothing
+						End If
+					Next
+					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+						If oSymbol.Name = "Order-no" Then
+							Dim oPoint As Point2d = oSymbol.Position
+								oPoint.X = 76.6
+								oPoint.Y = 11.88
+							If Not oPoint Is Nothing Then
+								oSymbol.Position = oPoint
+							End If
+						End If
+					Next
+					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+						If oSymbol.Name = "TD-le-ri" Then
+							Dim oPoint As Point2d = oSymbol.Position
+								oPoint.X = oTopView.Left - 5
+								oPoint.Y = oTopView.Top - oTopView.Height/2
+							If Not oPoint Is Nothing Then
+								oSymbol.Position = oPoint
+							End If
+						End If
+					Next
+					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+						If oSymbol.Name = "TD-ri-le" Then
+							Dim oPoint As Point2d = oSymbol.Position
+								
+								oPoint.X = oTopView.Left + oTopView.Width + 5
+								oPoint.Y = oTopView.Top - oTopView.Height/2
+							If Not oPoint Is Nothing Then
+								oSymbol.Position = oPoint
+							End If
+						End If
+					Next
+					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+						If Parameter("Travel_Direction") = "Left to Right" Then
+							'For Each oView In oDrawDoc.ActiveSheet.DrawingViews
+								If oView.Name.Contains("BottomView") Then
+										'Do nothing because its already generated
+								Else
+									If oSymbol.Name = "Left to Right" Then
+										oSymbol.Delete									
+										oInsertionPoint3 = oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/2)-3, oTopView.Center.Y-3)	
+										oSketchedSymbolDef3 = oDrawDoc.SketchedSymbolDefinitions.Item("TD-le-ri")
+										'oSketchedSymbolDef3.Delete
+										oSketchedSymbol3 = oSheet.SketchedSymbols.Add(oSketchedSymbolDef3, oInsertionPoint3)', 0, 1, Nothing)
+									End If
+							'	Else'Do nothing
+								End If
+							'Next
+						Else 'Do nothing
+						End If
+					Next
+					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+						If Parameter("Travel_Direction") = "Right to Left" Then
+'						If oSymbol.Name.Active = "TD-ri-le" Then
+							'For Each oView In oDrawDoc.ActiveSheet.DrawingViews
+								If oView.Name.Contains("TopView") Then
+									'Do nothing because it is already generated
+								Else 
+									If oSymbol.Name = "Right to Left" Then
+										oSymbol.Delete
+										'MsgBox("TesT right")
+										oInsertionPoint3 = oTG.CreatePoint2d(oTopView.Center.X+(oTopView.Height/2)+3,oTopView.Center.Y-3)
+										oSketchedSymbolDef3  = oDrawDoc.SketchedSymbolDefinitions.Item("TD-ri-le")		
+										'oSketchedSymbolDef3.Delete
+										oSketchedSymbol3 = oSheet.SketchedSymbols.Add(oSketchedSymbolDef3, oInsertionPoint3)', 0, 1, Nothing)
+									End If
+								 'Do nothing
+								End If
+							'Next
+						Else 'Do Nothing							
+						End If
+					Next 	
+				Else 'If Parameter("Sketch_Symbol_Locations") = "", Do nothing
+				End If
+				']
+			'Insert Symbol
+				'[
+				If Parameter("Sketch_Symbol_Locations") = "Corners" Then
+				    oSketchedSymbolDef0 = oDrawDoc.SketchedSymbolDefinitions.Item("Guarding Note - Machinery Directive")
+						oInsertionPoint0 = oTG.CreatePoint2d(10.5, 2.85)
+						
+			   		 oSketchedSymbolDef1 = oDrawDoc.SketchedSymbolDefinitions.Item("Drawing Disclaimer")
+						oInsertionPoint1 = oTG.CreatePoint2d(10.5, 50.4)	
+						
+				    oSketchedSymbolDef2 = oDrawDoc.SketchedSymbolDefinitions.Item("Customer Approval Block")
+						oInsertionPoint2 = oTG.CreatePoint2d(76.5, 8.58-1.75)
+					
+					oSketchedSymbolDef4 = oDrawDoc.SketchedSymbolDefinitions.Item("Order-no")
+						oInsertionPoint4 = oTG.CreatePoint2d(63.56, 3.5)
+						
+					oSketchedSymbol = oSheet.SketchedSymbols.Add(oSketchedSymbolDef0, oInsertionPoint0)', 0, 1, Nothing)
+					oSketchedSymbol = oSheet.SketchedSymbols.Add(oSketchedSymbolDef1, oInsertionPoint1)', 0, 1, Nothing)	
+					oSketchedSymbol = oSheet.SketchedSymbols.Add(oSketchedSymbolDef2, oInsertionPoint2)', 0, 1, Nothing)
+					'oSketchedSymbol = oSheet.SketchedSymbols.Add(oSketchedSymbolDef4, oInsertionPoint4)', 0, 1, Nothing)			
+					
+				Else If Parameter("Sketch_Symbol_Locations") = "Bottom Right" Then
+				    oSketchedSymbolDef0 = oDrawDoc.SketchedSymbolDefinitions.Item("Guarding Note - Machinery Directive")
+						oInsertionPoint0 = oTG.CreatePoint2d(73.6, 7.35)
+						
+					oSketchedSymbolDef1 = oDrawDoc.SketchedSymbolDefinitions.Item("Drawing Disclaimer")
+						oInsertionPoint1 = oTG.CreatePoint2d(73.6, 17.15)
+						
+					oSketchedSymbolDef2 = oDrawDoc.SketchedSymbolDefinitions.Item("Customer Approval Block")
+						oInsertionPoint2 = oTG.CreatePoint2d(76.5, 28.2)
+
+					oSketchedSymbolDef4 = oDrawDoc.SketchedSymbolDefinitions.Item("Order-no")
+						oInsertionPoint4 = oTG.CreatePoint2d(63.56, 3.5)
+						
+					oSketchedSymbol = oSheet.SketchedSymbols.Add(oSketchedSymbolDef0, oInsertionPoint0, 0, 1, Nothing)
+					oSketchedSymbol = oSheet.SketchedSymbols.Add(oSketchedSymbolDef1, oInsertionPoint1, 0, 1, Nothing)	
+					oSketchedSymbol = oSheet.SketchedSymbols.Add(oSketchedSymbolDef2, oInsertionPoint2, 0, 1, Nothing)	
+					'oSketchedSymbol = oSheet.SketchedSymbols.Add(oSketchedSymbolDef4, oInsertionPoint4, 0, 1, Nothing)	
+				Else 'Do nothing
+				End If
+				']
+'			If iProperties.Value("", "Left to Right")
+'			Else
+'			End If
+		']
+		
+'__________________________________________________________________________________________________________________________________________________________
+'--------------FRONT VIEW----------------
+
+	'E-Stop Start/Stop Switches
+		'[
+			Dim oMAdoc As AssemblyDocument = ThisDrawing.ModelDocument	
+			Dim oACompDef As AssemblyComponentDefinition = oMAdoc.ComponentDefinition
+			Dim oRightDoc As Document = oRightView.ReferencedDocumentDescriptor.ReferencedDocument
+			Dim  oModelPoint3 As Inventor.WorkPoint
+			'Dim oDef As AssemblyComponentDefinition 
+		'	Dim oMainPowerDoc As Document
+		'		oMainPowerDoc = oDoc.ReferencedDocuments.Item(2)
+					'Dim MainPowerPlane As Inventor.CentroidWorkPointDef
+					'item(1) = rbd product
+					'item(6) = main power switch
+					'item(10) = controls enclosure
+					'	MainPowerPlane
+			'	Dim oModelPoint3 As Point
+				'Dim oModelPoint3 As Point2d
+					oModelPoint3 = oACompDef.WorkPoints.Item(4)
+					'oRightView.SetIncludeStatus(oModelPoint3, False)
+					'oModelPoint3.Point.X
+					
+					
+					'oModelPoint3.Visible
+					'oModelPoint3.
+				'MessageBox.Show(oMainPowerDoc.DisplayName, "Title")
+				
+				'oACompDef.
+				'MsgBox(oModelPoint3.Name)
+			If Parameter("Controls_Distance_from_Machine") = "0ft"
+				If Parameter("Start_Stop_EStop_on_HMI") = "True" Then
+					'oDrawDoc.C
+					'leaderPoints.Add(oTG.CreatePoint2d(oView3.ModelToDrawingViewSpace(), 40))    'controls text location 
+					If Parameter("Stack_Lights") = "N/A" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(46, 40))    'controls text location 
+						leaderPoints.Add(oTG.CreatePoint2d(43.8, 38.5)) 'controls arrow location
+					Else' if there is a stack light
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(46, 40-4))    'controls text location 
+						leaderPoints.Add(oTG.CreatePoint2d(43.8, 38.5-4)) 'controls arrow location
+					End If
+					
+					If Parameter("CAT_Rating") = "CAT 1" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP SWITCHES ")
+					Else
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP / RESET SWITCHES ")
+					End If	
+				Else 'If its a remote SSES
+					If Parameter("Travel_Direction") = "Left to Right" Then
+						If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X -1,oFrontView.Center.Y+3))''controls text location 
+							leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X , oFrontView.Center.Y))'controls arrow location
+						Else 'if there are stack lights
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X -(oFrontView.Width/2)+1,oFrontView.Center.Y))'controls text location 
+							leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X - 3, oFrontView.Center.Y-3))'controls arrow location
+						End If
+						If Parameter("CAT_Rating") = "CAT 1" Then' And Parameter("Pressure_Monitor") = "False" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP SWITCHES ")
+						Else
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP / RESET SWITCHES ")
+						End If	
+						
+					Else 'If it is Right to Left
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(57, 32))    'controls text location 
+						leaderPoints.Add(oTG.CreatePoint2d(53.5, 34.5)) 'controls arrow location
+						If Parameter("CAT_Rating") = "CAT 1" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP SWITCHES ")
+						Else
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP / RESET SWITCHES ")
+						End If	
+					End If
+				End If 
+			Else 'if the controls are free standing
+				If Parameter("Start_Stop_EStop_on_HMI") = "True" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(46, 40))    'controls text location 
+					leaderPoints.Add(oTG.CreatePoint2d(43.8, 38.5)) 'controls arrow location
+					If Parameter("CAT_Rating") = "CAT 1" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP SWITCHES ")
+					Else
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP / RESET SWITCHES ")
+					End If	
+				Else 'If its a remote SSES
+					If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+						If Parameter("Travel_Direction") = "Left to Right" Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X-(oFrontView.Width/2)-1,oFrontView.Center.Y-oFrontView.Height/2))'controls arrow location
+							leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X-(oFrontView.Width/2.5),oFrontView.Center.Y+oFrontView.Height/7))'controls arrow location
+							If Parameter("CAT_Rating") = "CAT 1 Then'" Or Parameter("Pressure_Monitor") = "False" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP SWITCHES ")
+							Else
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP / RESET SWITCHES ")
+							End If	
+						Else 'If it is Right to Left
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(57, 32))    'controls text location 
+							leaderPoints.Add(oTG.CreatePoint2d(53.5, 34.5)) 'controls arrow location
+							If Parameter("CAT_Rating") = "CAT 1" Then'Or Parameter("Pressure_Monitor") = "False" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP SWITCHES ")
+							Else
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "START / STOP / " & vbCrLf & "E-STOP / RESET SWITCHES ")
+							End If	
+						End If
+					Else 'if it is mounted on the back
+						
+					End If	
+				End If
+			End If
+
+		']
+		
+	'HMI
+		'[
+			If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+				If Parameter("Stack_Lights") = "N/A" And Parameter("HMI_On_Post") = False Then
+					If Parameter("Metal_Detector") = False Then
+						If Parameter("HMI_Size") = "7in" Then
+							leaderPoints.Clear()
+							leaderPoints.add(oTG.CreatePoint2d(38, oFrontView.Top +3))   'controls text locatipn
+							leaderPoints.add(oTG.CreatePoint2d(40, oFrontView.Top))   'controls arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "7"" HMI")
+						Else If Parameter("HMI_Size") = "12in" Then
+							leaderPoints.Clear()
+							leaderPoints.add(oTG.CreatePoint2d(38, oFrontView.Top +3))   'controls text locatipn
+							leaderPoints.add(oTG.CreatePoint2d(40, oFrontView.Top))   'controls arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "12"" HMI")
+						Else If Parameter("HMI_Size") = "15in" Then
+							leaderPoints.Clear()
+							leaderPoints.add(oTG.CreatePoint2d(38, oFrontView.Top+2))   'controls text locatipn
+							leaderPoints.add(oTG.CreatePoint2d(39, oFrontView.Top))   'controls arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "15"" HMI")
+						Else' If Parameter("HMI_Size") = "N / A" Then 'Do nothing
+						End If 'end hmi size
+					Else 'if there is a MD
+						If Parameter("Travel_Direction") = "Left to Right" Then
+							If Parameter("HMI_Size") = "7in" Then
+								leaderPoints.Clear()
+								leaderPoints.add(oTG.CreatePoint2d(38+3, oFrontView.Top+3))   'controls text locatipn
+								leaderPoints.add(oTG.CreatePoint2d(40+3, oFrontView.Top))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "7"" HMI")
+							Else If Parameter("HMI_Size") = "12in" Then
+								leaderPoints.Clear()
+								leaderPoints.add(oTG.CreatePoint2d(38+3, oFrontView.Top+3))   'controls text locatipn
+								leaderPoints.add(oTG.CreatePoint2d(40+3, oFrontView.Top))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "12"" HMI")
+							Else If Parameter("HMI_Size") = "15in" Then
+								leaderPoints.Clear()
+								leaderPoints.add(oTG.CreatePoint2d(38+3, oFrontView.Top + 2))   'controls text locatipn
+								leaderPoints.add(oTG.CreatePoint2d(39+3, oFrontView.Top))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "15"" HMI")
+							Else' If Parameter("HMI_Size") = "N / A" Then 'Do nothing
+							End If'end hmi size
+						Else 'if its right to left
+							If Parameter("HMI_Size") = "7in" Then
+								leaderPoints.Clear()
+								leaderPoints.add(oTG.CreatePoint2d(38, oFrontView.Top +3))   'controls text locatipn
+								leaderPoints.add(oTG.CreatePoint2d(40, oFrontView.Top))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "7"" HMI")
+							Else If Parameter("HMI_Size") = "12in" Then
+								leaderPoints.Clear()
+								leaderPoints.add(oTG.CreatePoint2d(38, oFrontView.Top +3))   'controls text locatipn
+								leaderPoints.add(oTG.CreatePoint2d(40, oFrontView.Top))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "12"" HMI")
+							Else If Parameter("HMI_Size") = "15in" Then
+								leaderPoints.Clear()
+								leaderPoints.add(oTG.CreatePoint2d(38, oFrontView.Top+2))   'controls text locatipn
+								leaderPoints.add(oTG.CreatePoint2d(39, oFrontView.Top))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "15"" HMI")
+							Else' If Parameter("HMI_Size") = "N / A" Then 'Do nothing
+							End If 'end hmi size
+						End If'end transport direction
+					End If 'end MD
+'					Else
+'						If Parameter("HMI_Size") = "7in" Then
+'							leaderPoints.Clear()
+'							leaderPoints.add(oTG.CreatePoint2d(38, 41))   'controls text locatipn
+'							leaderPoints.add(oTG.CreatePoint2d(40, 37.9))   'controls arrow location
+'							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "7"" HMI")
+'						Else If Parameter("HMI_Size") = "12in" Then
+'							leaderPoints.Clear()
+'							leaderPoints.add(oTG.CreatePoint2d(38, 41))   'controls text locatipn
+'							leaderPoints.add(oTG.CreatePoint2d(40, 37.9))   'controls arrow location
+'							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "12"" HMI")
+'						Else If Parameter("HMI_Size") = "15in" Then
+'							leaderPoints.Clear()
+'							leaderPoints.add(oTG.CreatePoint2d(38, 41))   'controls text locatipn
+'							leaderPoints.add(oTG.CreatePoint2d(39, 39))   'controls arrow location
+'							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "15"" HMI")
+'						Else' If Parameter("HMI_Size") = "N / A" Then 'Do nothing
+'						End If
+'					End If
+				Else If Parameter("Stack_Lights") <> "N/A" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+3,oFrontView.Center.Y+5))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+2,oFrontView.Center.Y+3))   'controls arrow location
+					If Parameter("HMI_Size") = "7in" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "7"" HMI")
+					Else If Parameter("HMI_Size") = "12in" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "12"" HMI")
+					Else If Parameter("HMI_Size") = "15in" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "15"" HMI")
+					Else' If Parameter("HMI_Size") = "N / A" Then 'Do nothing
+					End If
+				Else If Parameter("HMI_On_Post") = True Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+3,oFrontView.Top))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+2,oFrontView.Top - 1))   'controls arrow location
+					If Parameter("HMI_Size") = "7in" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "7"" HMI")
+					Else If Parameter("HMI_Size") = "12in" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "12"" HMI")
+					Else If Parameter("HMI_Size") = "15in" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "15"" HMI")
+					End If	
+				End If 'end stack light
+			Else 'If its a free standing controls
+				If Parameter("HMI_Size") = "7in" Then
+					If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-1,oFrontView.Top))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-2,oFrontView.Top-1))   'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "7"" HMI")
+					Else 'if there are stack lights
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+oFrontView.Width-4,oFrontView.Top+1))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+oFrontView.Width-3,oFrontView.Top-4))   'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "7"" HMI")
+					End If
+				Else If Parameter("HMI_Size") = "12in" Then
+					If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-1,oFrontView.Top))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-2,oFrontView.Top-1))   'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "12"" HMI")
+					Else 'if there are stack lights
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-4,oFrontView.Top+1))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-3,oFrontView.Top-4))   'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "12"" HMI")
+					End If
+				Else If Parameter("HMI_Size") = "15in" Then
+					If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-1,oFrontView.Top))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-2,oFrontView.Top-1))   'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "15"" HMI")
+					Else 'if there are stack lights
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-1,oFrontView.Top-4))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontViewRight-3,oFrontView.Top-6))   'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "15"" HMI")
+					End If
+				Else If Parameter("HMI_Size") = "N/A" Then 'Do nothing
+				End If
+			End If
+		']
+
+	'Input Power
+		'[
+			If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+				If Parameter("HMI_Size") = "7in" Or Parameter("HMI_Size") = "12in" Then
+					If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+						If Parameter("Stack_Lights") = "N/A" And Parameter("HMI_On_Post") = False Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(37.5, 40))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(38.5, 38.2))   'controls arrow location
+						Else ' the view is taller b/c of stack light or the post
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(36.5, 40-3))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(38.5-1, 38.2-3-1.5))   'controls arrow location
+						End If
+					Else 'on the back
+						If Parameter("Stack_Lights") = "N/A" And Parameter("HMI_On_Post") = False Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+oLeftView.Width/2,oLeftView.Center.Y+(oLeftView.Height/2.5)))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + oLeftView.Width / 2 - 3, oLeftView.Center.Y + (oLeftView.Height / 2.5) -1))   'controls arrow location
+						Else ' the view is taller b/c of stack light or the post
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+oLeftView.Width/2,oLeftView.Center.Y+(oLeftView.Height/2.5-3)))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + oLeftView.Width / 2 - 2.5, oLeftView.Center.Y + (oLeftView.Height / 2.5) -4.4))   'controls arrow location
+						End If
+					End If
+					If Parameter("Input_Power") = "110 V / 1 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "110 V / 1 PH")
+					Else If Parameter("Input_Power") = "220 V / 1 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 1 PH")
+					Else If Parameter("Input_Power") = "220 V / 3 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 3 PH")
+					Else If Parameter("Input_Power") = "440 V / 3 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "440 V / 3 PH")
+					End If
+				Else If Parameter("HMI_Size") = "15in" Then 'All 15in are Globals, and the Power In is on the Bottom View
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+3,oBottomView.Center.Y-(oBottomView.Height/2)))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+1,oBottomView.Center.Y-(oBottomView.Height/2)+1))   'controls arrow location
+						'leaderPoints.Add(oTG.CreatePoint2d(46.5, 44.5))   'controls text locatipn
+						'leaderPoints.Add(oTG.CreatePoint2d(44.5,46.5))   'controls arrow location
+					If Parameter("Input_Power") = "110 V / 1 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "110 V / 1 PH")
+					Else If Parameter("Input_Power") = "220 V / 1 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 1 PH")
+					Else If Parameter("Input_Power") = "220 V / 3 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 3 PH")
+					Else If Parameter("Input_Power") = "440 V / 3 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "440 V / 3 PH")
+					End If
+				End If
+			Else 'If it is a free-standing enclosure
+				If Parameter("HMI_Size") = "7in" Or Parameter("HMI_Size") = "12in" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(37.5, 40))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(38.5, 38.2))   'controls arrow location
+					If Parameter("Input_Power") = "110 V / 1 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "110 V / 1 PH")
+					Else If Parameter("Input_Power") = "220 V / 1 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 1 PH")
+					Else If Parameter("Input_Power") = "220 V / 3 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 3 PH")
+					Else If Parameter("Input_Power") = "440 V / 3 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "440 V / 3 PH")
+					End If
+				Else If Parameter("HMI_Size") = "15in" Then 'All 15in are Globals, and the Power In is on the Bottom View
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+(oBottomView.Width/2),oBottomView.Center.Y-(oBottomView.Height/2)))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+(oBottomView.Width/2)-2,oBottomView.Center.Y-(oBottomView.Height/2)+1))   'controls arrow location
+						'leaderPoints.Add(oTG.CreatePoint2d(46.5, 44.5))   'controls text locatipn
+						'leaderPoints.Add(oTG.CreatePoint2d(44.5,46.5))   'controls arrow location
+					If Parameter("Input_Power") = "110 V / 1 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "110 V / 1 PH")
+					Else If Parameter("Input_Power") = "220 V / 1 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 1 PH")
+					Else If Parameter("Input_Power") = "220 V / 3 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "220 V / 3 PH")
+					Else If Parameter("Input_Power") = "440 V / 3 PH" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "INPUT POWER" & vbCrLf & "440 V / 3 PH")
+					End If
+				End If
+			End If
+		']
+		
+	'Pulley
+		'[
+			If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+				If Parameter("Back_Up_Detection") = "False" And Parameter("Spacing_Wheel") = "False" Then
+					If Parameter("Stack_Lights") = "N/A" And Parameter("HMI_On_Post") = False Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+1+oFrontView.Width/2, oFrontView.Center.Y+2.5))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X + oFrontView.Width / 2, oFrontView.Center.Y + 1))   'controls  arrow location
+					Else 'If there are stack lights
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+1+oFrontView.Width/2, oFrontView.Center.Y+2))'-oFrontView.Height/5+1))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X + oFrontView.Width / 2, oFrontView.Center.Y+1 ))'- oFrontView.Height / 5))   'controls  arrow location
+					End If
+				Else 'if there is a PE in front of the conveyor
+					If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X-1+oFrontView.Width/2, oFrontView.Center.Y+3.5))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X-2+ oFrontView.Width / 2, oFrontView.Center.Y + 1))   'controls  arrow location
+					Else 'If there are stack lights
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+1+oFrontView.Width/2, oFrontView.Center.Y+1))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+2 + oFrontView.Width / 2, oFrontView.Center.Y))   'controls  arrow location
+					End If
+				End If
+					If Parameter("Pulley") = "10" Then		
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø10 PULLEY"& vbCrLf & "TYP.") 'Left Side
+					Else If Parameter("Pulley") = "15" Then'If it is a 19 pulley
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø15 PULLEY" & vbCrLf & "TYP.") 'Left Side
+					Else If Parameter("Pulley") = "29" Then	
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø29 PULLEY"& vbCrLf & "TYP.") 'Left Side
+					Else If Parameter("Pulley") = "30" Then'If it is a 19 pulley
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X-1-oFrontView.Width/2, oFrontView.Center.Y+1))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+1 - oFrontView.Width / 2, oFrontView.Center.Y ))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø30 PULLEY"& vbCrLf & "TYP.") 'Left Side
+					End If
+			Else 'If it is a free-standing enclosure
+				If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left-1, oFrontView.Center.Y+5))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left, oFrontView.Center.Y+3))   'controls  arrow location
+					If Parameter("Pulley") = "10" Then	
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø10 PULLEY" & vbCrLf & "TYP.") 'Left Side
+					Else If Parameter("Pulley") = "15" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø15 PULLEY" & vbCrLf & "TYP.") 'Left Side
+					Else If Parameter("Pulley") = "29" Then		
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø29 PULLEY" & vbCrLf & "TYP.") 'Left Side
+					Else If Parameter("Pulley") = "30" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø30 PULLEY" & vbCrLf & "TYP.") 'Left Side
+					End If
+				Else' if there are stack lights
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left-1, oFrontView.Center.Y+1))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left, oFrontView.Center.Y))   'controls  arrow location
+					If Parameter("Pulley") = "10" Then		
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø10 PULLEY" & vbCrLf & "TYP.") 'Left Side
+					Else If Parameter("Pulley") = "15" Then
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø15 PULLEY" & vbCrLf & "TYP.") 'Left Side
+					Else If Parameter("Pulley") = "29" Then		
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø29 PULLEY" & vbCrLf & "TYP.") 'Left Side
+					Else If Parameter("Pulley") = "30" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+1-oFrontView.Width/2, oFrontView.Center.Y-oFrontView.Height/5+1))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+2 - oFrontView.Width / 2, oFrontView.Center.Y - oFrontView.Height / 5))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "Ø30 PULLEY" & vbCrLf & "TYP.") 'Left Side
+					End If	
+				End If
+			End If
+		']
+		
+	'Main Power Switch, UL508A, Stack Light, and J-Box
+		'[
+			If Parameter("HMI_Size") = "7in" Or Parameter("HMI_Size") = "12in" Then
+				If Parameter("Travel_Direction") = "Right to Left" Then
+					If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+						If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+							'Main Power Disconnect	
+								If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X-3,oFrontView.Center.Y+4))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X-1,oFrontView.Center.Y+2))   'controls arrow location
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+								Else 'if there are stack lights
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X-6,oFrontView.Center.Y+4))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X-4,oFrontView.Center.Y-2))   'controls arrow location
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+								End If
+								
+'							UL508A Cert.
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(49, 28.5))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(42,33))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"UL508A CERTIFIED" & vbCrLf & "ENCLOSURE")'  & vbCrLf & "7MM TRIANGLE" & vbCrLf & "KEY LOCKED")
+
+						Else If Parameter("Mounted_Controls_Enclosure") = "On the Back" Then
+							'Main Power Disconnect	
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y+1))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"MAIN POWER" & vbCrLf & "DISCONNECT")
+								
+							'UL508A Cert.
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y+1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y+3))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"UL508A CERTIFIED" & vbCrLf & "ENCLOSURE")'  & vbCrLf & "7MM TRIANGLE" & vbCrLf & "KEY LOCKED")
+						Else 'If its not attached
+							If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+oFrontView.Width,oFrontView.Center.Y-1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+oFrontView.Width-1,oFrontView.Center.Y+1))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+							Else 'if there are stack lights
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+oFrontView.Width,oFrontView.Center.Y-1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+oFrontView.Width-1,oFrontView.Center.Y+1))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+							End If
+						End If 'controls location
+					'Stack Light
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+3,oFrontView.Center.Y+oFrontView.Height/2.5+1))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+1,oFrontView.Center.Y+oFrontView.Height/2.5))   'controls arrow location
+						If Parameter("Stack_Lights") = "3 Segments" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS")
+						Else If Parameter("Stack_Lights") = "5 Segments" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS")
+						Else If Parameter("Stack_Lights") = "3 Segments with Horn" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS" & vbCrLf & "WITH HORN")
+						Else If Parameter("Stack_Lights") = "5 Segments with Horn" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS" & vbCrLf & "WITH HORN")
+						Else If Parameter("Stack_Lights") = "4 Segments" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS")
+						Else If Parameter("Stack_Lights") = "4 Segments with Horn" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+						Else' If Parameter("Stack_Lights") = "N/A" Then 'Do nothing	
+						End If
+							
+					Else If Parameter("Controls_Distance_from_Machine") <> "0ft" Then
+						
+							'Main Power Disconnect
+							If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y+1))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"MAIN POWER" & vbCrLf & "DISCONNECT")
+							Else
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-3))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y-1))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"MAIN POWER" & vbCrLf & "DISCONNECT")
+							End If
+							'UL508A Cert.
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y-4))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"UL508A CERTIFIED" & vbCrLf & "ENCLOSURE")'  & vbCrLf & "7MM TRIANGLE" & vbCrLf & "KEY LOCKED")
+						
+							'Stack Light
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y+oRightView.Height/3-2))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left+1,oRightView.Center.Y+oRightView.Height/3))   'controls arrow location
+								If Parameter("Stack_Lights") = "3 Segments" Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS")
+								Else If Parameter("Stack_Lights") = "5 Segments" Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS")
+								Else If Parameter("Stack_Lights") = "3 Segments with Horn" Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+								Else If Parameter("Stack_Lights") = "5 Segments with Horn" Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS" & vbCrLf & "WITH HORN")
+								Else If Parameter("Stack_Lights") = "4 Segments" Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS")
+								Else If Parameter("Stack_Lights") = "4 Segments with Horn" Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+								Else' If Parameter("Stack_Lights") = "N/A" Then 'Do nothing	
+								End If
+								
+							'J-Box
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-4, oBottomView.Center.Y-2))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-2, oBottomView.Center.Y))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "HIGH / LOW" & vbCrLf & "VOLTAGE" & vbCrLf & "JUNCTION BOX")		
+					End If 'for attached enclosure
+				Else 'If its left to right
+					If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+						If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+							'Main Power Disconnect	
+								If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(35,30))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(40, 34.5))   'controls arrow location
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+								Else 'if there is a stack light
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(35,30-2))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(40, 34.5-2))   'controls arrow location
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+								End If
+								
+							'UL508A Cert.
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(35, 28.5))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(42,33))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"UL508A CERTIFIED" & vbCrLf & "ENCLOSURE")'  & vbCrLf & "7MM TRIANGLE" & vbCrLf & "KEY LOCKED")
+						Else If Parameter("Mounted_Controls_Enclosure") = "On the Back" Then
+							'Main Power Disconnect	
+								If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-1))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y+1))   'controls arrow location
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+								Else 'If there are stack lights
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-3))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y-1))   'controls arrow location
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+								End If 
+								
+							'UL508A Cert.
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y-4))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"UL508A CERTIFIED" & vbCrLf & "ENCLOSURE")'  & vbCrLf & "7MM TRIANGLE" & vbCrLf & "KEY LOCKED")
+						Else 'If its not attached, do nothing
+						End If
+					'Stack Light
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y+oRightView.Height/3-2))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left+1,oRightView.Center.Y+oRightView.Height/3))   'controls arrow location
+						If Parameter("Stack_Lights") = "3 Segments" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS")
+						Else If Parameter("Stack_Lights") = "5 Segments" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS")
+						Else If Parameter("Stack_Lights") = "3 Segments with Horn" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+						Else If Parameter("Stack_Lights") = "5 Segments with Horn" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS" & vbCrLf & "WITH HORN")
+						Else If Parameter("Stack_Lights") = "4 Segments" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS")
+						Else If Parameter("Stack_Lights") = "4 Segments with Horn" Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+						Else' If there is no stack light
+						End If	
+					Else If Parameter("Controls_Distance_from_Machine") <> "0ft" Then
+						'Main Power Disconnect	
+							If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y+1))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+							Else 'if there are stack lights
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-3))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y-2))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+							End If
+						'UL508A Cert.
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-5))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y-4))   'controls arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"UL508A CERTIFIED" & vbCrLf & "ENCLOSURE")'  & vbCrLf & "7MM TRIANGLE" & vbCrLf & "KEY LOCKED")
+					
+						'Stack Light
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y+oRightView.Height/3-2))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left+1,oRightView.Center.Y+oRightView.Height/3))   'controls arrow location
+							If Parameter("Stack_Lights") = "3 Segments" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS")
+							Else If Parameter("Stack_Lights") = "5 Segments" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS")
+							Else If Parameter("Stack_Lights") = "3 Segments with Horn" Then
+								leaderPoints.Clear()
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+							Else If Parameter("Stack_Lights") = "5 Segments with Horn" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS" & vbCrLf & "WITH HORN")
+							Else If Parameter("Stack_Lights") = "4 Segments" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS")
+							Else If Parameter("Stack_Lights") = "4 Segments with Horn" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+							Else' If Parameter("Stack_Lights") = "N/A" Then 'Do nothing	
+							End If
+						'J-Box
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4-2, oBottomView.Center.Y+oBottomView.Height/3-2))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4, oBottomView.Center.Y+oBottomView.Height/3))   'controls arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "HIGH / LOW" & vbCrLf & "VOLTAGE" & vbCrLf & "JUNCTION BOX")		
+					End If 'For Attached Enclosure
+				End If 'For Left to Right
+			Else If Parameter("HMI_Size") = "15in" Then 
+				'Transport Direction doesn't matter for these Leaders
+					If Parameter("Controls_Distance_from_Machine") = "0ft" Then 
+						'Main Power Disconnect	
+							If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False  Then
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y+2))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+							Else 'if there are stack lights
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-4))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y-1))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+							End If
+							
+						'UL508A Cert.
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y-3))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left,oRightView.Center.Y))   'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"UL508A CERTIFIED" & vbCrLf & "ENCLOSURE")'  & vbCrLf & "7MM TRIANGLE" & vbCrLf & "KEY LOCKED")
+						'Stack Light.
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y+oRightView.Height/3-2))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left+2,oRightView.Center.Y+oRightView.Height/3))   'controls arrow location
+							If Parameter("Stack_Lights") = "3 Segments" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS")
+							Else If Parameter("Stack_Lights") = "5 Segments" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS")
+							Else If Parameter("Stack_Lights") = "3 Segments with Horn" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+							Else If Parameter("Stack_Lights") = "5 Segments with Horn" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS" & vbCrLf & "WITH HORN")
+							Else If Parameter("Stack_Lights") = "4 Segments" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS")
+							Else If Parameter("Stack_Lights") = "4 Segments with Horn" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+							Else' If Parameter("Stack_Lights") = "N/A" Then 'Do nothing	
+							End If
+					Else If Parameter("Controls_Distance_from_Machine") <> "0ft" Then
+						'Main Power Disconnect	
+							leaderPoints.Clear()
+							oModelPlane = oACompDef.WorkPlanes.Item(3)
+							If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width+1,oLeftView.Center.Y+.2*oLeftView.Height))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width,oLeftView.Center.Y+.1*oLeftView.Height)) 'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+							Else 'if there are stack lights
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width+1,oLeftView.Center.Y+.2*oLeftView.Height-3))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width,oLeftView.Center.Y+.1*oLeftView.Height-3)) 'controls arrow location
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MAIN POWER" & vbCrLf & "DISCONNECT")
+							End If
+							
+						'Stack Lights	
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width,oLeftView.Center.Y+.4*oLeftView.Height))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width-2,oLeftView.Center.Y+.35*oLeftView.Height)) 'controls arrow location
+							If Parameter("Stack_Lights") = "3 Segments" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS")
+							Else If Parameter("Stack_Lights") = "5 Segments" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS")
+							Else If Parameter("Stack_Lights") = "3 Segments with Horn" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "3 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+							Else If Parameter("Stack_Lights") = "5 Segments with Horn" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "5 SEGMENT" & vbCrLf & "STACK LIGHTS" & vbCrLf & "WITH HORN")
+							Else If Parameter("Stack_Lights") = "4 Segments" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS")
+							Else If Parameter("Stack_Lights") = "4 Segments with Horn" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "4 SEGMENT" & vbCrLf & "STACK LIGHTS"& vbCrLf & "WITH HORN")
+							Else' If Parameter("Stack_Lights") = "N/A" Then 'Do nothing	
+							End If
+						'J-Box
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4-2, oBottomView.Center.Y-1))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4, oBottomView.Center.Y))   'controls arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "HIGH / LOW" & vbCrLf & "VOLTAGE" & vbCrLf & "JUNCTION BOX")	
+				End If 'For attached enclosure
+			End If 'For HMI Size
+		']
+	
+	'Controls Distance from Machine
+		'[
+			If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width+.5,oLeftView.Center.Y))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width-.5,oLeftView.Center.Y-.05*oLeftView.Height)) 'controls arrow location
+				If Parameter("Controls_Distance_from_Machine") = "5ft" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 5'")
+				Else If Parameter("Controls_Distance_from_Machine") = "10ft" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 10'")
+				Else If Parameter("Controls_Distance_from_Machine") = "15ft" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 15'")
+				Else If Parameter("Controls_Distance_from_Machine") = "20ft" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 20'")				
+				Else If Parameter("Controls_Distance_from_Machine") = "6m" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 6m")
+				Else If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+				End If
+			Else
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width+.5,oLeftView.Center.Y-3))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Left+oLeftView.Width-.5,oLeftView.Center.Y-.05*oLeftView.Height-5)) 'controls arrow location
+				If Parameter("Controls_Distance_from_Machine") = "5ft" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 5'")
+				Else If Parameter("Controls_Distance_from_Machine") = "10ft" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 10'")
+				Else If Parameter("Controls_Distance_from_Machine") = "15ft" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 15'")
+				Else If Parameter("Controls_Distance_from_Machine") = "20ft" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 20'")				
+				Else If Parameter("Controls_Distance_from_Machine") = "6m" Then
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "FLOOR MOUNTED CONTROL" & vbCrLf & "FOR PLACEMENT WITHIN 6m")
+				Else If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+				End If
+			End If
+		']
+		
+	'Guide Rails
+		'[
+			If Parameter("Guide_Rails") = True Then
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+1+(oFrontView.Width/2),oFrontView.Center.Y+3))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+(oFrontView.Width/2),oFrontView.Center.Y+1))  'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "GUIDE RAILS")
+				Else 'If it is right to left
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+1+(oFrontView.Width/2),oFrontView.Center.Y+2))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Center.X+(oFrontView.Width/2),oFrontView.Center.Y))  'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "GUIDE RAILS")
+				End If
+			Else'If there are no guide rails
+				'Do nothing
+			End If
+		']
+		
+'______________________________________________________________________________________________________________________________________________________	
+'------------LEFT SIDE VIEW--------------
+	'Caster Wheels
+		'[
+			If Parameter("Caster_Wheels") = True Then
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(15.75, 27.5))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(17.5, 24))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CASTER WHEELS")
+			Else 'If there are not caster wheels, do nothing
+			End If
+		']
+						
+	'Rejector Pump
+		'[
+			If Parameter("Rejector_Present") = True Then
+				If Parameter("Mounted_Controls_Enclosure")="On the Front" Then
+					If Parameter("HMI_Size") = "7in" Or Parameter("HMI_Size") ="12in" Then
+						If  Parameter("Rejector")="Standard Pusher" Or  Parameter("Rejector")="Standard Air Blaster" Or Parameter("Rejector") = "High Performance Air Blaster" Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+							If Parameter("Pressure_Monitor") = True Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT"& vbCrLf & "PRESSURE MONITORING")
+								leaderPoints.Clear()
+							Else If Parameter("Pressure_Monitor") = False Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT")
+								leaderPoints.Clear()
+							End If 'for naming pump
+						ElseIf Parameter("Rejector") = "HD Air Blaster" Or Parameter("Rejector") = "HD Pusher" Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+							If Parameter("Pressure_Monitor") = True Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT"& vbCrLf & "PRESSURE MONITORING")
+								leaderPoints.Clear()
+							Else If Parameter("Pressure_Monitor") = False Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT")
+								leaderPoints.Clear()
+							End If 'for naming pump
+						Else 'If Parameter(Rejector) = N/A
+						End If 'for rejector type
+					Else 'Global is always on the back or free standing'If Parameter("HMI_Size") = "15in" Then 'The global enclosure will be in the way, so the leader needs to be longer
+						
+					End If 'for different sized hmi
+				Else If Parameter("Mounted_Controls_Enclosure") = "On the Back" Then
+					If Parameter("Travel_Direction") = "Right to Left"
+						If Parameter("HMI_Size") = "7in" Or Parameter("HMI_Size") ="12in" Then
+							If Parameter("Rejector") = "Standard Pusher" Or Parameter("Rejector") = "Standard Air Blaster" Or Parameter("Rejector") = "High Performance Air Blaster" Then
+								If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								Else ' if there is a stack light
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3.5), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								End If
+								If Parameter("Pressure_Monitor") = True Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT"& vbCrLf & "PRESSURE MONITORING")
+									leaderPoints.Clear()
+								Else If Parameter("Pressure_Monitor") = False Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT")
+									leaderPoints.Clear()
+								End If 'for naming pump
+							ElseIf Parameter("Rejector") = "HD Air Blaster" Or Parameter("Rejector") = "HD Pusher" Then'If rejector type = N/A, do nothing
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(57.4, 29.1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(59.9, 30.5))   'controls  arrow location
+								If Parameter("Pressure_Monitor") = True Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT"& vbCrLf & "PRESSURE MONITORING")
+									leaderPoints.Clear()
+								Else If Parameter("Pressure_Monitor") = False Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT")
+									leaderPoints.Clear()
+								End If 'for naming pump
+							Else 'If Parameter(Rejector) = N/A
+							End If 'for rejector type
+						Else If Parameter("HMI_Size") = "15in" Then 'The global enclosure will be in the way, so the leader needs to be longer
+							If  Parameter("Rejector")="Standard Pusher" Or  Parameter("Rejector")="Standard Air Blaster" Or Parameter("Rejector") = "High Performance Air Blaster" Then
+								If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								Else ' if there is a stack light
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3.5), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								End If
+								If Parameter("Pressure_Monitor") = True Then 'And Parameter("Product_Mass") = "Mass < 500g" Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT"& vbCrLf & "PRESSURE MONITORING")
+									leaderPoints.Clear()
+								Else If Parameter("Pressure_Monitor") = False Then 'And Parameter("Product_Mass") = "Mass < 500g" Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT")
+									leaderPoints.Clear()
+								End If'for naming pump
+							ElseIf Parameter("Rejector") = "HD Air Blaster" Or Parameter("Rejector") = "HD Pusher" Then'If rejector type = N/A, do nothing
+								If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								Else ' if there is a stack light
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3.5), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								End If
+								If Parameter("Pressure_Monitor") = True Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT"& vbCrLf & "PRESSURE MONITORING")
+									leaderPoints.Clear()
+								Else If Parameter("Pressure_Monitor") = False Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT")
+									leaderPoints.Clear()
+								End If 'for naming pump
+							Else 'If Parameter(Rejector) = N/A
+							End If 'for rejector type
+						End If ' for different sized hmi
+					Else 'if its left to right
+						If Parameter("HMI_Size") = "7in" Or Parameter("HMI_Size") ="12in" Then
+							If  Parameter("Rejector")="Standard Pusher" Or  Parameter("Rejector")="Standard Air Blaster" Or Parameter("Rejector") = "High Performance Air Blaster" Then
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(27.3, 29.1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(26.2, 30.5))   'controls  arrow location
+								If Parameter("Pressure_Monitor") = True Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT"& vbCrLf & "PRESSURE MONITORING")
+									leaderPoints.Clear()
+								Else If Parameter("Pressure_Monitor") = False Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT")
+									leaderPoints.Clear()
+								End If'for naming pump
+							ElseIf Parameter("Rejector") = "HD Air Blaster" Or Parameter("Rejector") = "HD Pusher" Then'If rejector type = N/A, do nothing
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(27.3, 29.1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(26.2, 30.5))   'controls  arrow location
+								If Parameter("Pressure_Monitor") = True Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT"& vbCrLf & "PRESSURE MONITORING")
+									leaderPoints.Clear()
+								Else If Parameter("Pressure_Monitor") = False Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT")
+									leaderPoints.Clear()
+								End If 'for naming pump
+							Else 'If Parameter(Rejector) = N/A
+							End If 'for rejector type
+						'End If ' for different sized hmi
+						Else If Parameter("HMI_Size") = "15in" Then 'The global enclosure will be in the way, so the leader needs to be longer
+							If  Parameter("Rejector")="Standard Pusher" Or  Parameter("Rejector")="Standard Air Blaster" Or Parameter("Rejector") = "High Performance Air Blaster" Then
+								If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								Else ' if there is a stack light
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3.5), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								End If
+								If Parameter("Pressure_Monitor") = True Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT"& vbCrLf & "PRESSURE MONITORING")
+									leaderPoints.Clear()
+								Else If Parameter("Pressure_Monitor") = False Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT")
+									leaderPoints.Clear()
+								End If 'for naming pump
+							ElseIf Parameter("Rejector") = "HD Air Blaster" Or Parameter("Rejector") = "HD Pusher" Then'If rejector type = N/A, do nothing
+								If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								Else ' if there is a stack light
+									leaderPoints.Clear()
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+									leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3.5), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+								End If
+								If Parameter("Pressure_Monitor") = True Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT"& vbCrLf & "PRESSURE MONITORING")
+									leaderPoints.Clear()
+								Else If Parameter("Pressure_Monitor") = False Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT")
+									leaderPoints.Clear()
+								End If 'for naming pump
+							Else 'If Parameter(Rejector) = N/A
+							End If 'for rejector type
+						End If 'for different sized hmi
+					End If 'for left to right
+				Else 'if the controls are not mounted on the frame
+					If Parameter("HMI_Size") = "7in" Or Parameter("HMI_Size") ="12in" Then
+						If  Parameter("Rejector")="Standard Pusher" Or  Parameter("Rejector")="Standard Air Blaster" Or Parameter("Rejector") = "High Performance Air Blaster" Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X, oLeftView.Center.Y-(oLeftView.Height/2)-1))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X-2, oLeftView.Center.Y-3))   'controls  arrow location
+							If Parameter("Pressure_Monitor") = True Then 'And Parameter("Product_Mass") = "Mass < 500g" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT"& vbCrLf & "PRESSURE MONITORING")
+								leaderPoints.Clear()
+							Else If Parameter("Pressure_Monitor") = False Then 'And Parameter("Product_Mass") = "Mass < 500g" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT")
+								leaderPoints.Clear()
+'							Else If Parameter("Pressure_Monitor") = True And Parameter("Product_Mass") = "Mass > 500g" Then
+'								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "5-8 CFM" & vbCrLf & "1/2 NPT" & "PRESSURE MONITORING")
+'								leaderPoints.Clear()
+'							Else If Parameter("Pressure_Monitor") = False And Parameter("Product_Mass") = "Mass > 500g" Then
+'								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "5-8 CFM" & vbCrLf & "1/2 NPT")
+'								leaderPoints.Clear()
+							End If 'for naming pump
+							ElseIf Parameter("Rejector") = "HD Air Blaster" Or Parameter("Rejector") = "HD Pusher" Then'If rejector type = N/A, do nothing
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X, oLeftView.Center.Y-(oLeftView.Height/2)-1))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X-2, oLeftView.Center.Y-3))   'controls  arrow location
+								If Parameter("Pressure_Monitor") = True Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT"& vbCrLf & "PRESSURE MONITORING")
+									leaderPoints.Clear()
+								Else If Parameter("Pressure_Monitor") = False Then
+									oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT")
+									leaderPoints.Clear()
+								End If 'for naming pump
+							Else 'If Parameter(Rejector) = N/A
+							End If 'for rejector type
+					Else If Parameter("HMI_Size") = "15in" Then 'The global enclosure will be in the way, so the leader needs to be longer
+						If  Parameter("Rejector")="Standard Pusher" Or  Parameter("Rejector")="Standard Air Blaster" Or Parameter("Rejector") = "High Performance Air Blaster" Then
+							If Parameter("Stack_Lights") = "N/A"  And Parameter("HMI_On_Post") = False Then
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+							Else ' if there is a stack light
+								leaderPoints.Clear()
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+(oLeftView.Width/2),oLeftView.Center.Y-(oLeftView.Height/2)))   'controls text locatipn
+								leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X + (oLeftView.Width / 3.5), oLeftView.Center.Y - (oLeftView.Height / 3.5)))   'controls  arrow location
+							End If
+							If Parameter("Pressure_Monitor") = True Then 'And Parameter("Product_Mass") = "Mass < 500g" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT"& vbCrLf & "PRESSURE MONITORING")
+								leaderPoints.Clear()
+							Else If Parameter("Pressure_Monitor") = False Then 'And Parameter("Product_Mass") = "Mass < 500g" Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "3-5 CFM" & vbCrLf & "1/4 NPT")
+								leaderPoints.Clear()
+'							Else If Parameter("Pressure_Monitor") = True Then 'And Parameter("Product_Mass") = "Mass > 500g" Then
+'								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "5-8 CFM" & vbCrLf & "1/2 NPT" & "PRESSURE MONITORING")
+'								leaderPoints.Clear()
+'							Else If Parameter("Pressure_Monitor") = False And Parameter("Product_Mass") = "Mass > 500g" Then
+'								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "5-8 CFM" & vbCrLf & "1/2 NPT")
+'								leaderPoints.Clear()
+							End If 'for naming pump
+						ElseIf Parameter("Rejector") = "HD Air Blaster" Or Parameter("Rejector") = "HD Pusher" Then'If rejector type = N/A, do nothing
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X, oLeftView.Center.Y-(oLeftView.Height/2)-1))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X-1, oLeftView.Center.Y-1))   'controls  arrow location
+							If Parameter("Pressure_Monitor") = True Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT"& vbCrLf & "PRESSURE MONITORING")
+								leaderPoints.Clear()
+							Else If Parameter("Pressure_Monitor") = False Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AIR INLET:" & vbCrLf & "60-80 PSI" & vbCrLf & "8-10 CFM" & vbCrLf & "1/2 NPT")
+								leaderPoints.Clear()
+							End If 'for naming pump
+						Else 'If Parameter(Rejector) = N/A
+						End If 'for rejector type
+					End If 'for different sized hmi
+				End If 'mounting location
+			Else 'If there is no rejector present, do nothing
+			End If
+		']
+		
+'_______________________________________________________________________________________________________________________________________________________
+'------------RIGHT SIDE VIEW-------------
+
+	'Lift Points
+		'[
+			If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X, oRightView.Center.Y-oRightView.Height/2-1))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X + oRightView.Width/3, oRightView.Center.Y-oRightView.Height/3))    'controls LEFT arrowhead location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINT")
+			Else If Parameter("Mounted_Controls_Enclosure") = "On the Back" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X, oRightView.Center.Y-1-oRightView.Height/2))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X + oRightView.Width/4, oRightView.Center.Y-oRightView.Height/3-2))    'controls LEFT arrowhead location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINT")
+			Else 'If free standing
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X + 1+ oRightView.Width/6, oRightView.Center.Y-1-oRightView.Height/2))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X + oRightView.Width / 7, oRightView.Center.Y - oRightView.Height / 3))    'controls LEFT arrowhead location
+				leaderPoints.GetEnumerator
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "LIFT POINT")
+			End If
+ 
+		']
+		
+	'Rejector Type
+		'[
+			If Parameter("Stack_Lights") = "N/A" And Parameter("HMI_On_Post") = False Then
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left - 1, oRightView.Top - 2))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left, oRightView.Top - 3))    'controls LEFT arrowhead location
+			Else 'if there are stack lights/a post
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left - 1, oRightView.Center.Y+oRightView.Height/5-2))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left, oRightView.Center.Y+oRightView.Height/5-3))    'controls LEFT arrowhead location
+			End If
+			If Parameter("Rejector") = "High Performance Air Blaster" 
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "HIGH PERFORMANCE" & vbCrLf & "AIR BLASTER")
+			Else If Parameter("Rejector") = "HD Air Blaster"
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "HEAVY DUTY" & vbCrLf & "AIR BLASTER")
+			Else If Parameter("Rejector") = "HD Pusher"
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "HEAVY DUTY" & vbCrLf & "PUSHER")
+			End If
+		']
+		
+''______________________________________________________________________________________________________________________________________________________
+'--------------BOTTOM VIEW---------------
+
+'	'Motor (include canBUS, Servo and qty)
+		'[
+			If Parameter("Travel_Direction") = "Left to Right"
+				'[
+				If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+					'[
+					If Parameter("HMI_Size") = "7in" Or Parameter("HMI_Size") = "12in" Then
+						'[
+						If Parameter("Motor_Type") = "canBUS" Then'Or Parameter("Motor_Type") = "Engel canBUS" Then
+							'[
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(52, 45))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(50, 48))   'controls  arrow location
+							If Parameter("Amount_of_Conveyors") = 1 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR")
+							Else If Parameter("Amount_of_Conveyors") = 2 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (2x)")
+							Else If Parameter("Amount_of_Conveyors") = 3 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (3x)")
+							Else If Parameter("Amount_of_Conveyors") = 4 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (4x)")
+							Else If Parameter("Amount_of_Conveyors") = 5 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (5x)")
+							Else If Parameter("Amount_of_Conveyors") = 6 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (6x)")
+							Else If Parameter("Amount_of_Conveyors") = 7 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (7x)")
+							Else If Parameter("Amount_of_Conveyors") = 8 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (8x)")
+							End If 'canbus callout for 7" and 12"
+						Else 'If its a servo for 7" and 12"
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(52, 45))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(50, 48))   'controls  arrow location
+							If Parameter("Amount_of_Conveyors") = 1 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR")
+							Else If Parameter("Amount_of_Conveyors") = 2 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (2x)")
+							Else If Parameter("Amount_of_Conveyors") = 3 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (3x)")
+							Else If Parameter("Amount_of_Conveyors") = 4 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (4x)")
+							Else If Parameter("Amount_of_Conveyors") = 5 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (5x)")
+							Else If Parameter("Amount_of_Conveyors") = 6 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (6x)")
+							Else If Parameter("Amount_of_Conveyors") = 7 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (7x)")
+							Else If Parameter("Amount_of_Conveyors") = 8 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (8x)")
+							End If 'amount of conveyor ifs
+							']
+						End If 'if its a servo for 7" and 12"
+						
+					Else If Parameter("HMI_Size") = "15in" Then 'the location moves up b/c of the Global
+						If Parameter("Motor_Type") = "canBUS" Then'Or Parameter("Motor_Type") = "Engel canBUS" Then
+							'[
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+1+oBottomView.Width/2, oBottomView.Center.Y+oBottomView.Height/3))  'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-2+oBottomView.Width/2, oBottomView.Center.Y))   'controls  arrow location
+							If Parameter("Amount_of_Conveyors") = 1 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR")
+							Else If Parameter("Amount_of_Conveyors") = 2 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (2x)")
+							Else If Parameter("Amount_of_Conveyors") = 3 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (3x)")
+							Else If Parameter("Amount_of_Conveyors") = 4 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (4x)")
+							Else If Parameter("Amount_of_Conveyors") = 5 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (5x)")
+							Else If Parameter("Amount_of_Conveyors") = 6 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (6x)")
+							Else If Parameter("Amount_of_Conveyors") = 7 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (7x)")
+							Else If Parameter("Amount_of_Conveyors") = 8 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (8x)")
+							End If 'canbus callout for 15"
+						Else 'If its a servo for 15"
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+1+oBottomView.Width/2, oBottomView.Center.Y+oBottomView.Height/3))  'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-2+oBottomView.Width/2, oBottomView.Center.Y))   'controls  arrow location
+							If Parameter("Amount_of_Conveyors") = 1 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR")
+							Else If Parameter("Amount_of_Conveyors") = 2 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (2x)")
+							Else If Parameter("Amount_of_Conveyors") = 3 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (3x)")
+							Else If Parameter("Amount_of_Conveyors") = 4 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (4x)")
+							Else If Parameter("Amount_of_Conveyors") = 5 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (5x)")
+							Else If Parameter("Amount_of_Conveyors") = 6 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (6x)")
+							Else If Parameter("Amount_of_Conveyors") = 7 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (7x)")
+							Else If Parameter("Amount_of_Conveyors") = 8 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (8x)")
+							End If'conveyor count if
+							']
+						End If'If its a servo for 15"
+						']
+					End If 'pulley callout for 15" HMI placement		
+				Else 'If it is a free-standing enclosure
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+1, oBottomView.Top))  'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X, oBottomView.Center.Y + oBottomView.Height / 3 - 2))   'controls  arrow location
+					If Parameter("Motor_Type") = "canBUS" Then'Or Parameter("Motor_Type") = "Engel canBUS" Then
+						'[
+						If Parameter("Amount_of_Conveyors") = 1 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR")
+						Else If Parameter("Amount_of_Conveyors") = 2 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (2x)")
+						Else If Parameter("Amount_of_Conveyors") = 3 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (3x)")
+						Else If Parameter("Amount_of_Conveyors") = 4 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (4x)")
+						Else If Parameter("Amount_of_Conveyors") = 5 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (5x)")
+						Else If Parameter("Amount_of_Conveyors") = 6 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (6x)")
+						Else If Parameter("Amount_of_Conveyors") = 7 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (7x)")
+						Else If Parameter("Amount_of_Conveyors") = 8 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (8x)")
+						End If 
+					Else 'If its servo motors
+						If Parameter("Amount_of_Conveyors") = 1 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR")
+						Else If Parameter("Amount_of_Conveyors") = 2 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (2x)")
+						Else If Parameter("Amount_of_Conveyors") = 3 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (3x)")
+						Else If Parameter("Amount_of_Conveyors") = 4 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (4x)")
+						Else If Parameter("Amount_of_Conveyors") = 5 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (5x)")
+						Else If Parameter("Amount_of_Conveyors") = 6 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (6x)")
+						Else If Parameter("Amount_of_Conveyors") = 7 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (7x)")
+						Else If Parameter("Amount_of_Conveyors") = 8 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ENGEL CANBUS" & vbCrLf &  "MOTOR (8x)")
+						End If'conveyor count if
+						']
+					End If'For motor types
+					']
+				End If 'for controls distance
+			Else 'If it is right to left
+				If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+					'[
+					If Parameter("HMI_Size") = "7in" Or Parameter("HMI_Size") = "12in" Then
+						'[
+						If Parameter("Motor_Type") = "canBUS" Or Parameter("Motor_Type") = "Engel canBUS" Then
+							'[
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Left-1, oBottomView.Top-oBottomView.Height))  'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Left+1, oBottomView.Center.Y-2))   'controls  arrow location
+							If Parameter("Amount_of_Conveyors") = 1 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR")
+							Else If Parameter("Amount_of_Conveyors") = 2 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (2x)")
+							Else If Parameter("Amount_of_Conveyors") = 3 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (3x)")
+							Else If Parameter("Amount_of_Conveyors") = 4 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (4x)")
+							Else If Parameter("Amount_of_Conveyors") = 5 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (5x)")
+							Else If Parameter("Amount_of_Conveyors") = 6 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (6x)")
+							Else If Parameter("Amount_of_Conveyors") = 7 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (7x)")
+							Else If Parameter("Amount_of_Conveyors") = 8 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (8x)")
+							End If 'canbus callout for 7" and 12"
+						Else 'If its a servo for 7" and 12"
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(31, 45))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(33, 48))   'controls  arrow location
+							If Parameter("Amount_of_Conveyors") = 1 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR")
+							Else If Parameter("Amount_of_Conveyors") = 2 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (2x)")
+							Else If Parameter("Amount_of_Conveyors") = 3 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (3x)")
+							Else If Parameter("Amount_of_Conveyors") = 4 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (4x)")
+							Else If Parameter("Amount_of_Conveyors") = 5 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (5x)")
+							Else If Parameter("Amount_of_Conveyors") = 6 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (6x)")
+							Else If Parameter("Amount_of_Conveyors") = 7 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (7x)")
+							Else If Parameter("Amount_of_Conveyors") = 8 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (8x)")
+							End If 'amount of conveyor ifs
+							']
+						End If 'if its a servo for 7" and 12"
+					Else If Parameter("HMI_Size") = "15in" Then 'the location moves up b/c of the Global
+						If Parameter("Motor_Type") = "canBUS" Or Parameter("Motor_Type") = "Engel canBUS" Then
+							'[
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+1+oBottomView.Width/2, oBottomView.Center.Y+oBottomView.Height/1.75))  'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-3+oBottomView.Width/2, oBottomView.Center.Y+oBottomView.Height/3))   'controls  arrow location
+							If Parameter("Amount_of_Conveyors") = 1 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR")
+							Else If Parameter("Amount_of_Conveyors") = 2 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (2x)")
+							Else If Parameter("Amount_of_Conveyors") = 3 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (3x)")
+							Else If Parameter("Amount_of_Conveyors") = 4 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (4x)")
+							Else If Parameter("Amount_of_Conveyors") = 5 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (5x)")
+							Else If Parameter("Amount_of_Conveyors") = 6 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (6x)")
+							Else If Parameter("Amount_of_Conveyors") = 7 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (7x)")
+							Else If Parameter("Amount_of_Conveyors") = 8 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (8x)")
+							End If 'canbus callout for 15"
+						Else 'If its a servo for 15"
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+1+oBottomView.Width/2, oBottomView.Center.Y+oBottomView.Height/1.75))  'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-3+oBottomView.Width/2, oBottomView.Center.Y+oBottomView.Height/3))   'controls  arrow location
+							If Parameter("Amount_of_Conveyors") = 1 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR")
+							Else If Parameter("Amount_of_Conveyors") = 2 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (2x)")
+							Else If Parameter("Amount_of_Conveyors") = 3 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (3x)")
+							Else If Parameter("Amount_of_Conveyors") = 4 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (4x)")
+							Else If Parameter("Amount_of_Conveyors") = 5 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (5x)")
+							Else If Parameter("Amount_of_Conveyors") = 6 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (6x)")
+							Else If Parameter("Amount_of_Conveyors") = 7 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (7x)")
+							Else If Parameter("Amount_of_Conveyors") = 8 Then
+								oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (8x)")
+							End If'conveyor count if
+							']
+						End If'If its a servo for 15"
+						']
+					End If 'pulley callout for different HMI placement		
+				Else 'If it is a free-standing enclosure
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+1, oBottomView.Top))  'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X, oBottomView.Center.Y + oBottomView.Height / 3 - 2))   'controls  arrow location
+					If Parameter("Motor_Type") = "canBUS" Or Parameter("Motor_Type") = "Engel canBUS" Then
+						'[
+						If Parameter("Amount_of_Conveyors") = 1 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR")
+						Else If Parameter("Amount_of_Conveyors") = 2 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (2x)")
+						Else If Parameter("Amount_of_Conveyors") = 3 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (3x)")
+						Else If Parameter("Amount_of_Conveyors") = 4 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (4x)")
+						Else If Parameter("Amount_of_Conveyors") = 5 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (5x)")
+						Else If Parameter("Amount_of_Conveyors") = 6 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (6x)")
+						Else If Parameter("Amount_of_Conveyors") = 7 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (7x)")
+						Else If Parameter("Amount_of_Conveyors") = 8 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "CANBUS MOTOR (8x)")
+						End If 
+					Else 'If its servo motors
+						If Parameter("Amount_of_Conveyors") = 1 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR")
+						Else If Parameter("Amount_of_Conveyors") = 2 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (2x)")
+						Else If Parameter("Amount_of_Conveyors") = 3 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (3x)")
+						Else If Parameter("Amount_of_Conveyors") = 4 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (4x)")
+						Else If Parameter("Amount_of_Conveyors") = 5 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (5x)")
+						Else If Parameter("Amount_of_Conveyors") = 6 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (6x)")
+						Else If Parameter("Amount_of_Conveyors") = 7 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (7x)")
+						Else If Parameter("Amount_of_Conveyors") = 8 Then
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SERVO MOTOR (8x)")
+						End If'conveyor count if
+						']
+					End If'For motor types
+					']
+				End If 'for controls distance
+				']
+			End If'for travel direction
+			
+			If Parameter("Motor_Type") = "Engel canBUS" Then
+				If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+					If Parameter("MD_Present") = "True" Then					
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X, oBottomView.Center.Y-oBottomView.Height/1.75))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+1, oBottomView.Center.Y - oBottomView.Height/3))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MOTOR" & vbCrLf & "J-BOX")
+					Else
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X-2, oLeftView.Center.Y-oLeftView.Height/3))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+1,oLeftView.Center.Y))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MOTOR" & vbCrLf & "J-BOX")
+					End If
+				Else 'if the HMI is on the Back
+					If Parameter("MD_Present") = "True" Then					
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X, oBottomView.Center.Y+oBottomView.Height/1.75))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X+1, oBottomView.Center.Y + oBottomView.Height/3))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MOTOR" & vbCrLf & "J-BOX")
+					Else
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X-2, oLeftView.Center.Y+oLeftView.Height/3))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oLeftView.Center.X+1,oLeftView.Center.Y))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "MOTOR" & vbCrLf & "J-BOX")
+					End If
+				End If'HMI Sizes
+			End If
+		'] 
+		
+'	Load Cell 
+		'[
+		If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+			If Parameter("Travel_Direction") = "Left to Right"
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(38, oBottomView.Top - oBottomView.Height))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(42, oBottomView.Center.Y+2))   'controls  arrow location
+					'leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4-3, oBottomView.Center.Y))   'controls text locatipn
+					'leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4-1, oBottomView.Center.Y+oBottomView.Height/6))   'controls arrow location
+				If Parameter("Type_of_Load_Cell") = "EMFR"
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "EMFR LOAD CELL")
+				Else 'If its a SGLC
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "STRAIN GAUGE" & vbCrLf & "LOAD CELL")
+				End If
+			Else 'Right to Left
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(45, oBottomView.Center.Y - oBottomView.Height/1.9))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(42, oBottomView.Center.Y - oBottomView.Height/8))   'controls  arrow location
+					'leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4-3, oBottomView.Center.Y))   'controls text locatipn
+					'leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4-1, oBottomView.Center.Y+oBottomView.Height/6))   'controls arrow location
+				If Parameter("Type_of_Load_Cell") = "EMFR"
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "EMFR" & vbCrLf & " LOAD CELL")
+				Else 'If its a SGLC
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "STRAIN GAUGE" & vbCrLf & "LOAD CELL")
+				End If
+			End If
+		Else If Parameter("Mounted_Controls_Enclosure") = "On the Back" Then
+			If Parameter("Travel_Direction") = "Left to Right"
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-3.5,oBottomView.Center.Y-oBottomView.Height/3))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-1,oBottomView.Center.Y+1))   'controls  arrow location
+				If Parameter("Type_of_Load_Cell") = "EMFR"
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "EMFR" & vbCrLf & "LOAD CELL")
+				Else 'If its a SGLC
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "STRAIN GAUGE" & vbCrLf & "LOAD CELL")
+				End If
+			Else 'Right to Left
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(45, 56))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(42, 51.5))   'controls  arrow location
+				If Parameter("Type_of_Load_Cell") = "EMFR"
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "EMFR" & vbCrLf & "LOAD CELL")
+				Else 'If its a SGLC
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "STRAIN GAUGE" & vbCrLf & "LOAD CELL")
+				End If
+			End If
+		Else 'If its free standing
+			If Parameter("Travel_Direction") = "Left to Right"
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4+3, oBottomView.Center.Y))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4+2, oBottomView.Center.Y+oBottomView.Height/4))   'controls arrow location
+				If Parameter("Type_of_Load_Cell") = "EMFR"
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "EMFR" & vbCrLf & "LOAD CELL")
+				Else 'If its a SGLC
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "STRAIN GAUGE" & vbCrLf & "LOAD CELL")
+				End If
+			Else 'Right to Left
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4+3, oBottomView.Center.Y))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-oBottomView.Width/4+2, oBottomView.Center.Y+oBottomView.Height/4))   'controls arrow location
+				If Parameter("Type_of_Load_Cell") = "EMFR"
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "EMFR" & vbCrLf & "LOAD CELL")
+				Else 'If its a SGLC
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "STRAIN GAUGE" & vbCrLf & "LOAD CELL")
+				End If
+			End If
+		End If
+		
+		']
+		
+'	Foot Detail
+		'[
+			
+			If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-(oBottomView.Width/2)-4, oBottomView.Center.Y+1+oBottomView.Height/2))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-(oBottomView.Width/2)-5, oBottomView.Center.Y-1+oBottomView.Height/2))   'controls  arrow location
+				'leaderPoints.Add(oTG.CreatePoint2d(28.5, 56.5))   'controls text locatipn
+				'leaderPoints.Add(oTG.CreatePoint2d(27.5, 55.2))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "PATTERN" & vbCrLf & "ROTATIONAL")
+			Else 	'if it is free standing
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-(oBottomView.Width/2)-4, oBottomView.Center.Y-4+oBottomView.Height/2))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oBottomView.Center.X-(oBottomView.Width/2)-5, oBottomView.Center.Y-5+oBottomView.Height/2))   'controls  arrow location
+				'leaderPoints.Add(oTG.CreatePoint2d(28.5, 56.5))   'controls text locatipn
+				'leaderPoints.Add(oTG.CreatePoint2d(27.5, 55.2))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "PATTERN" & vbCrLf & "ROTATIONAL")
+			End If
+			
+		']
+		
+']
+'_______________________________________________________________________________________________________________________________________________________
+'----------------TOP VIEW----------------
+
+	'Reject Direction
+		'[
+			If Parameter("Rejector_Present") = True And Parameter("MD_Reject_Direction") = "N/A" Then
+				If Parameter("Reject_Direction") = "To the Front" Then
+					If Parameter("Travel_Direction") = "Left to Right" Then
+						If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+1+oTopView.Width/2, oTopView.Center.Y-2))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+1+oTopView.Width/2, oTopView.Center.Y-4))   'controls  arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE FRONT")
+						Else 'If its a free standing controls	
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-4+oTopView.Width/2, oTopView.Center.Y-4))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-4+oTopView.Width/2, oTopView.Center.Y-6))   'controls  arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE FRONT")
+						End If	 'controls location
+					Else 'if its right to left
+						If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-6-oTopView.Width/2, oTopView.Center.Y))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-6-oTopView.Width/2, oTopView.Center.Y-3))   'controls  arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE FRONT")
+						Else 'If its a free standing controls	
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-4-oTopView.Width/2, oTopView.Center.Y-4))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-4-oTopView.Width/2, oTopView.Center.Y-6))   'controls  arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE FRONT")
+						End If	'controls location
+					End If 'travel direction
+				Else If Parameter("Reject_Direction") = "To the Rear" And Parameter("MD_Reject_Direction") = "N/A" 'If it rejects towards the back
+					If Parameter("Travel_Direction") = "Left to Right" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X + 1 + oTopView.Width/2, oTopView.Center.Y+oTopView.Height/3))    'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X + 1 + oTopView.Width/2, oTopView.Center.Y+1))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE REAR")
+					Else 'if its right to left
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X - 6 - oTopView.Width/2, oTopView.Center.Y+oTopView.Height/3))    'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X - 6 - oTopView.Width/2, oTopView.Center.Y+1))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE REAR")
+					End If 'travel direction
+				End If 'Reject Direction
+			Else If Parameter("Rejector_Present") = True And Parameter("MD_Reject_Direction") <> "N/A" Then
+				If Parameter("Reject_Direction") = "To the Front" Then
+					If Parameter("Travel_Direction") = "Left to Right" Then
+						If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+1+oTopView.Width/2, oTopView.Center.Y-2))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+1+oTopView.Width/2, oTopView.Center.Y-4))   'controls  arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE FRONT")
+						Else 'If its a free standing controls	
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-4+oTopView.Width/2, oTopView.Center.Y-4))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-4+oTopView.Width/2, oTopView.Center.Y-6))   'controls  arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE FRONT")
+						End If 'controls location
+					Else 'if its right to left
+						If Parameter("Controls_Distance_from_Machine") = "0ft" Then
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Left + 1, oTopView.Top - oTopView.Height - 2))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Left + 1, oTopView.Top - oTopView.Height - 4))   'controls  arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE FRONT")
+						Else 'If its a free standing controls	
+							leaderPoints.Clear()
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-4-oTopView.Width/2, oTopView.Center.Y-4))   'controls text locatipn
+							leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-4-oTopView.Width/2, oTopView.Center.Y-6))   'controls  arrow location
+							oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE FRONT")
+						End If 'controls location
+					End If 'transport direction
+				Else If Parameter("Reject_Direction") = "To the Rear" 'And Parameter("MD_Reject_Direction") = "N/A" 'If it rejects towards the back
+					If Parameter("Travel_Direction") = "Left to Right" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X + 1 + oTopView.Width/2, oTopView.Center.Y+oTopView.Height/3))    'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X + 1 + oTopView.Width/2, oTopView.Center.Y+1))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE REAR")
+					Else 'if its right to left
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X - 6 - oTopView.Width/2, oTopView.Center.Y+oTopView.Height/3))    'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X - 6 - oTopView.Width/2, oTopView.Center.Y+1))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "WEIGHT REJECTS" & vbCrLf & "TO THE REAR")
+					End If 'travel direction
+				End If 'reject direction					
+			Else'If there is no rejector, do nothing
+			End If			
+		']
+		
+'	Scale Photoeye
+		'[
+			If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					'Scale Photoeye
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-5, oTopView.Center.Y+3))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-3, oTopView.Center.Y))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SCALE" & vbCrLf & "PHOTOEYE")
+				Else 'Right to Left'	
+					'Scale Photoeye
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+2, oTopView.Center.Y-4))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X, oTopView.Center.Y-1))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SCALE" & vbCrLf & "PHOTOEYE")
+				End If
+			Else If Parameter("Mounted_Controls_Enclosure") = "On the Back" Then
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					'Scale Photoeye
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-5, oTopView.Center.Y+5))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-3, oTopView.Center.Y+2))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SCALE" & vbCrLf & "PHOTOEYE")
+				Else 'Right to Left'	
+					'Scale Photoeye
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(43.75, 18))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(46, 15))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SCALE" & vbCrLf & "PHOTOEYE")
+				End If
+			Else 'If the controls are free standing
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					'Scale Photoeye
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Left, oTopView.Center.Y))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X - oTopView.Width/3, oTopView.Center.Y-oTopView.Height/6)) 'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SCALE" & vbCrLf & "PHOTOEYE")
+				Else 'Right to Left'	
+					'Scale Photoeye
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X + 2, oTopView.Center.Y+1))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X, oTopView.Center.Y-1)) 'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SCALE" & vbCrLf & "PHOTOEYE")
+				End If
+			End If
+			
+		']
+		
+'	Additional Photoeye
+		'[
+		If Parameter("Reject_Verify") = True Then
+			If Parameter("Travel_Direction") = "Left to Right" Then
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+(oTopView.Width/2)-1.5, oTopView.Center.Y-oTopView.Height/2-.5))'Parameter("Height")/25.3))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+(oTopView.Width/2)-2, oTopView.Center.Y-oTopView.Height/2+1))'Parameter("Height")/25-4))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "REJECT VERIFY" & vbCrLf & "PHOTOEYE")
+			Else 'Right to Left'	
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/2)-3, oTopView.Center.Y-oTopView.Height/2-.5))'Parameter("Height")/25.3))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/2)-.5, oTopView.Center.Y-oTopView.Height/2+1))'Parameter("Height")/25-4))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "REJECT VERIFY" & vbCrLf & "PHOTOEYE")
+			End If
+		Else 'Do nothing
+		End If
+		
+		If Parameter("Area_Full") = True Then
+			If Parameter("Travel_Direction") = "Left to Right" Then
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+(oTopView.Width/2)+1.5, oTopView.Center.Y-6))'Parameter("Height")/25.3))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+(oTopView.Width/2)-.5, oTopView.Center.Y-4))'Parameter("Height")/25-4))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AREA FULL" & vbCrLf & "PHOTOEYE")
+			Else 'Right to Left'	
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/2)-3, oTopView.Center.Y+3))'Parameter("Height")/25.3))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/2)-.5, oTopView.Center.Y+.5))'Parameter("Height")/25-4))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "AREA FULL" & vbCrLf & "PHOTOEYE")
+			End If
+		Else 'Do Nothing
+		End If
+		
+		If Parameter("Back_Up_Detection") = True Then
+			If Parameter("Travel_Direction") = "Left to Right" Then
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+(oTopView.Width/2)+3, oTopView.Center.Y+3))'Parameter("Height")/25.3))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+(oTopView.Width/2)+.5, oTopView.Center.Y+.5))'Parameter("Height")/25-4))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "BACK-UP DETECTION" & vbCrLf & "PHOTOEYE" & vbCrLf & "(CUSTOMER MOUNTED)")
+			Else 'Right to Left'	
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/2)-3, oTopView.Center.Y+3))'Parameter("Height")/25.3))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/2)-.5, oTopView.Center.Y+.5))'Parameter("Height")/25-4))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "BACK-UP DETECTION" & vbCrLf & "PHOTOEYE" & vbCrLf & "(CUSTOMER MOUNTED)")
+			End If
+		Else 'Do Nothing
+		End If
+		If Parameter("Countercheck") = True Then
+			If Parameter("Travel_Direction") = "Left to Right" Then
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(53, 18)) 'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(52, 15.5)) 'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "COUNTERCHECK" & vbCrLf & "PHOTOEYE")
+			Else 'Right to Left'	
+				leaderPoints.Clear()
+				leaderPoints.Add(oTG.CreatePoint2d(30, 21.5))   'controls text locatipn
+				leaderPoints.Add(oTG.CreatePoint2d(31.5, 18.5))   'controls  arrow location
+				oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "COUNTERCHECK" & vbCrLf & "PHOTOEYE")
+			End If
+		Else 'Do Nothing
+		End If
+		']
+		
+	'Stap Belt
+		'[
+			If Parameter("Strap_Belt") = True Then
+				'If Parameter("Amount_of_Infeed_Conveyors") = "1" Then
+					'If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+1, oTopView.Center.Y+1))'Parameter("Height")/25.3))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X, oTopView.Center.Y))'Parameter("Height")/25-4))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "STRAP BELT")
+			Else 'if there is no strap belt, do nothing
+			End If	
+					
+		']
+		
+'______________________________________________________________________________________________________________________________________________________
+'------------Metal Detector--------------
+
+	'MD Photoeye
+		'[
+			If Parameter("Metal_Detector") = True Then
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					If Parameter("Mounted_Controls_Enclosure") = "On the Back" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/3)-2, oTopView.Center.Y+oTopView.Height/3))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/3), oTopView.Center.Y+1))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL DETECTOR" & vbCrLf & "PHOTOEYE")
+					Else 'if on the front
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/3)-2, oTopView.Center.Y-oTopView.Height/3))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/3), oTopView.Center.Y+1))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL DETECTOR" & vbCrLf & "PHOTOEYE")
+					End If
+				Else' If its right to left
+					If Parameter("Mounted_Controls_Enclosure") = "On the Front" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+(oTopView.Width/3)+1, oTopView.Center.Y-oTopView.Height/2))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+(oTopView.Width/3)-1, oTopView.Center.Y-3))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL DETECTOR" & vbCrLf & "PHOTOEYE")
+					Else 'if on the back
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/3)-2, oTopView.Center.Y-oTopView.Height/3))  'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-(oTopView.Width/3), oTopView.Center.Y+1))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL DETECTOR" & vbCrLf & "PHOTOEYE")
+					End If
+				End If
+			Else 'If there is no MD PE, do nothing
+			End If
+		']
+		
+	'MD Type callout
+		'[
+			If Parameter("Metal_Detector") = True Then
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left + 5, oFrontView.Center.Y+5))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left + 4, oFrontView.Center.Y+3))   'controls  arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL DETECTOR" & vbCrLf & "(MD Type)" & vbCrLf & "APERTURE: WxH")
+				Else' If its right to left
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left + oFrontView.Width - 3, oFrontView.Center.Y+5))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left + oFrontView.Width - 4, oFrontView.Center.Y+3))   'controls  arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL DETECTOR" & vbCrLf & "(MD Type)" & vbCrLf & "APERTURE: WxH")
+				End If
+			Else 'If there is no spacing wheel, do nothing
+			End If
+		']
+		
+	'MD Reject
+		'[
+			If Parameter("Metal_Detector") = True Then
+				If Parameter("MD_Reject_Direction") = "To the Front" Then
+					If Parameter("Travel_Direction") = "Left to Right" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+1+oTopView.Width/4, oTopView.Top-oTopView.Height-2))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+1+oTopView.Width/4, oTopView.Top-oTopView.Height-4))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL REJECTS" & vbCrLf & "TO THE FRONT")
+					Else 'if its right to left
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-1-oTopView.Width/4, oTopView.Top-oTopView.Height-2))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-1-oTopView.Width/4, oTopView.Top-oTopView.Height-4))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL REJECTS" & vbCrLf & "TO THE FRONT")
+					End If
+				Else If Parameter("MD_Reject_Direction") = "To the Rear"'If it rejects towards the back
+					If Parameter("Travel_Direction") = "Left to Right" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+1+oTopView.Width/4, oTopView.Top-oTopView.Height-2))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X+1+oTopView.Width/4,oTopView.Top-oTopView.Height-4))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL REJECTS" & vbCrLf & "TO THE REAR")
+					Else 'if its right to left
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-1-oTopView.Width/4, oTopView.Top + 2))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oTopView.Center.X-1-oTopView.Width/4, oTopView.Top + 4))   'controls  arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "METAL REJECTS" & vbCrLf & "TO THE REAR")
+					End If
+				Else 'no rejector
+				End If
+			Else'no MD
+			End If
+		']
+
+'_______________________________________________________________________________________________________________________________________________________
+'------------Customized Options----------
+	'Swing Gate Rejector
+		'[
+			If Parameter("Swing_Gate") = True Then
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+.5,oFrontView.Center.Y+1+oFrontView.Height/5))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+1,oFrontView.Center.Y+oFrontView.Height/5))   'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SWING GATE" & vbCrLf & "REJECTOR")
+				Else' If its right to left
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(31.5,40.8))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(35.04,39))   'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SWING GATE" & vbCrLf & "REJECTOR")
+				End If
+			Else 'If there is no spacing wheel, do nothing
+			End If
+		']
+
+	'Spacing Wheel
+		'[
+			If Parameter("Spacing_Wheel") = True Then
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+.5,oFrontView.Center.Y+1+oFrontView.Height/5))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oFrontView.Left+1,oFrontView.Center.Y+oFrontView.Height/5))   'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SPACING WHEEL")
+					
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oTopView.Left-1,oTopView.Center.Y+4))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oTopView.Left+2,oTopView.Center.Y+.5))   'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "???? CANBUS")
+				Else' If its right to left
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(31.5,40.8))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(35.04,39))   'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"SPACING WHEEL")
+				End If
+			Else 'If there is no spacing wheel, do nothing
+			End If
+		']
+		
+	'Vortec Cooler	
+		'[
+			If Parameter("Vortec_Cooler") = True Then
+			'	If Parameter("Travel_Direction") = "Left to Right" Then
+				If Parameter("HMI_Size") = "15in" Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1,oRightView.Center.Y - 2 - oRightView.Height/6))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left+1,oRightView.Center.Y - oRightView.Height/6))   'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "VORTEC COOLER" & vbCrLf & "AIR INLET" & vbCrLf & "100 PSI" & vbCrLf & "1/4 NPT")
+				Else 'If its HMI 7" or HMI 12"
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(49,33))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(47,31.7))   'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "VORTEC COOLER" & vbCrLf & "AIR INLET" & vbCrLf & "100 PSI" & vbCrLf & "1/4 NPT")
+				End If
+				'Else' If its right to left
+				'	leaderPoints.Clear()
+				'	leaderPoints.Add(oTG.CreatePoint2d(49,33))   'controls text locatipn
+				'	leaderPoints.Add(oTG.CreatePoint2d(47,31.7))   'controls arrow location
+				'	oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"VORTEC COOLER" & vbCrLf & "AIR INLET" & vbCrLf & "100 PSI" & vbCrLf & "1/4 NPT")
+			'	End If
+			Else 'If there is no vortec cooler, do nothing
+			End If
+		']
+		
+	'Side Grips
+		'[
+			If Parameter("Side_Grips") = True Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(60,11))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(58,14))   'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"R48" & vbCrLf & "TYP.")
+			Else 'If there is no sidegrips, do nothing
+			End If
+		']
+		
+	'Draft Shield
+		'[
+			If Parameter("Draft_Cover") = "Anti-Static" Then
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					If Parameter("Controls_Distance_from_Machine") <> "0ft" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+oRightView.Width/2, oRightView.Center.Y+(oRightView.Height/4+2)))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+5, oRightView.Center.Y+(oRightView.Height/4+1)))'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ANTI-STATIC" & vbCrLf & "DRAFT SHIELD")
+					Else' if the controls are attached to the frame
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+oRightView.Width/2, oRightView.Center.Y+(oRightView.Height/4+2)))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+5, oRightView.Center.Y+(oRightView.Height/4+1)))'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ANTI-STATIC" & vbCrLf & "DRAFT SHIELD")
+					End If	
+				Else' If its right to left
+					If Parameter("Controls_Distance_from_Machine") <> "0ft" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+oRightView.Width/2, oRightView.Center.Y+(oRightView.Height/2)-3))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+5, oRightView.Center.Y+3))'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ANTI-STATIC" & vbCrLf & "DRAFT SHIELD")
+					Else' if the controls are attached to the frame
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+oRightView.Width/2, oRightView.Center.Y+(oRightView.Height/2)-3))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+5, oRightView.Center.Y+3))'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "ANTI-STATIC" & vbCrLf & "DRAFT SHIELD")
+					End If	
+				End If
+			Else If Parameter("Draft_Cover") = "Standard" Then
+				If Parameter("Travel_Direction") = "Left to Right" Then
+					
+					If Parameter("Controls_Distance_from_Machine") <> "0ft" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+oRightView.Width/2, oRightView.Center.Y+(oRightView.Height/4+2)))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+5, oRightView.Center.Y+(oRightView.Height/4+1)))'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "DRAFT SHIELD")
+					Else' if the controls are attached to the frame
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+oRightView.Width/2, oRightView.Center.Y+(oRightView.Height/4+2)))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+5, oRightView.Center.Y+(oRightView.Height/4+1)))'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "DRAFT SHIELD")
+					End If	
+				Else' If its right to left
+					If Parameter("Controls_Distance_from_Machine") <> "0ft" Then
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+oRightView.Width/2, oRightView.Center.Y+(oRightView.Height/2)-3))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+5, oRightView.Center.Y+3))'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"DRAFT SHIELD")
+					Else' if the controls are attached to the frame
+						leaderPoints.Clear()
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+oRightView.Width/2, oRightView.Center.Y+(oRightView.Height/2)-3))   'controls text locatipn
+						leaderPoints.Add(oTG.CreatePoint2d(oRightView.Center.X+5, oRightView.Center.Y+3))'controls arrow location
+						oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints,"DRAFT SHIELD")
+					End If	
+				End If
+			Else 'if there is no draft cover, do nothing	
+			End If
+		']
+		
+	'Frame modifications
+		'[
+			'solid frame
+				'?
+			'Sanitary Feet
+				If Parameter("Sanitary_Feet")= True Then
+					leaderPoints.Clear()
+					leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left-1, oRightView.Center.Y-oRightView.Height/2-2))   'controls text locatipn
+					leaderPoints.Add(oTG.CreatePoint2d(oRightView.Left+1, oRightView.Center.Y-oRightView.Height/2+.5))'controls arrow location
+					oNote = oSheet.DrawingNotes.LeaderNotes.Add(leaderPoints, "SANITARY" & vbCrLf & "FEET")
+				Else 'Do nothing
+				End If			
+		']
+
+''_______________________________________________________________________________________________________________________________________________________
+''-------------Center Marks----------------
+	'[
+		Dim oCenters As ObjectsEnumerator
+		Dim oCLSettings As AutomatedCenterlineSettings
+	'	Dim oDoc As DrawingDocument
+			oDoc = ThisApplication.ActiveDocument
+		'Dim oSheets As Sheets
+		'Dim oSheet As Sheet
+		'Dim oViews As DrawingViews
+		'Dim oView As DrawingView
+		'capture the current active sheet
+		Dim oCurrentNumber As Sheet
+		oCurrentNumber = ThisDoc.Document.ActiveSheet
+		'oSheet.Activate
+		oSheets = ThisDoc.Document.Sheets
+		For Each oSheet In oSheets
+		'ActiveSheet = ThisDrawing.Sheet("OCD:1")
+		'If ActiveSheet.Name = "OCD" Then'In oSheets
+			'oSheet.Activate
+			oViews = oSheet.DrawingViews
+				For Each oView In oViews
+				'If ActiveSheet.View("VIEW2").View
+					Dim orientype As ViewOrientationTypeEnum
+					orientype = oView.Camera.ViewOrientationType
+					If orientype = 10757 Then
+						oView.GetAutomatedCenterlineSettings(oCLSettings)
+						'set settings for the view
+						oCLSettings.ApplyToBends = False
+						oCLSettings.ApplyToCircularPatterns = False
+						oCLSettings.ApplyToCylinders = True
+						oCLSettings.ApplyToFillets = False
+						oCLSettings.ApplyToHoles = False
+						oCLSettings.ApplyToPunches = False
+						oCLSettings.ApplyToRectangularPatterns = False
+						oCLSettings.ApplyToRevolutions = False
+						oCLSettings.ApplyToWorkFeatures = False
+						oCLSettings.ApplyToBends = False
+						oCLSettings.ProjectionNormalAxis = True
+						oCLSettings.ProjectionParallelAxis = False
+						oCLSettings.CircularEdgeMinimumThreshold = 4.005 'I should include a multiplier to account for this value changing as the scale changes
+						oCLSettings.CircularEdgeMaximumThreshold = 4.1
+						'place centerlines
+						oCenters = oView.SetAutomatedCenterlineSettings(oCLSettings)
+					End If
+				Next
+		Next
+		'End If
+		'activate the original current sheet
+		oCurrentNumber.activate
+	']
+'--------------Styles Editor Code-------------
+	'[	
+		'Change Precision for C-Series
+			oDoc.StylesManager.DimensionStyles("Default (MT-ISO)").LinearPrecision = 41729
+			oDoc.StylesManager.BalloonStyles("Balloon (MT-ISO)").LeaderStyle.ArrowheadType = 71941 'kFilledArrowheadType '
+			oDoc.StylesManager.DimensionStyles("Default (MT-ISO)").OriginOffset = .1
+		'I can't figure out how to chnage the Parts List via iLogic code
+	']
+	'[
+''Messing With Visibility
+'Get the drawing document
+'Dim oDrawingDocument As Inventor.DrawingDocument
+'  oDrawingDocument = ThisApplication.ActiveDocument
+''Create For loop to turn off visibility for each view
+'	For k = 1 To 6
+'		'Dim oView As Inventor.DrawingView
+'	  	oView = oDrawingDocument.ActiveSheet.DrawingViews.Item(k)
+'	 	'MessageBox.Show(oView.Name)
+	 
+'		'Get the assembly document referenced By the view
+'		Dim oAssemblyDocument As Inventor.AssemblyDocument
+'		  oAssemblyDocument = oView.ReferencedDocumentDescriptor.ReferencedDocument
+'		'Get the second component occurrence of the assembly document
+'		Dim oWeighConveyor As Inventor.ComponentOccurrence
+'		Dim oCableSearch As Inventor.ComponentOccurrence
+'	'Create a for loop to find assembly
+'		For j As Integer = 1 To 50 'search for asssembly
+'		 	oWeighConveyor = oAssemblyDocument.ComponentDefinition.Occurrences.Item(j) '10
+'			If oWeighConveyor.Name = "WeighingConveyor.Support" Then
+			
+'			'Create For loop to find part
+'				For i As Integer = 1 To 8 'search for motor cable
+'					oCableSearch = oWeighConveyor.SubOccurrences.Item(i) '2
+'					If oCableSearch.Name = "MotorCable" Then
+'						'Turn off visibility
+'							oView.SetVisibility(oCableSearch, False)
+'						Exit For
+'					End If
+'				Next 'end part search For loop
+'				Exit For
+'			End If
+'		Next 'end assembly search For loop
+'	Next 'end view's For loop
+
+']
