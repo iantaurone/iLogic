@@ -55,18 +55,19 @@ Dim oNote As LeaderNote
 		
 	'Delete Views
 		'[
-			'If oView.Name
 			For Each oView In oDrawDoc.ActiveSheet.DrawingViews
 				If oView.Name.Contains("ISOTopRightView") Then
 					oView.Delete 
-				Else 'do nothing	
+				Else 
+					'Do nothing	
 				End If
 			Next
 			
 			For Each oView In oDrawDoc.ActiveSheet.DrawingViews
 				If oView.Name.Contains("TopView_with_hidden_parts") Then
 					oView.Delete 
-				Else 'do nothing	
+				Else 
+					'Do nothing	
 				End If
 			Next
 		']
@@ -287,6 +288,8 @@ Dim oNote As LeaderNote
 							If Not oPoint Is Nothing Then
 								oSymbol.Position = oPoint
 							End If
+							'MessageBox.Show(oSymbol.Definition.Name)
+								'how do i find and change the Value for the Property Field "Order-no.:"?
 						End If
 					Next
 					For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
@@ -812,6 +815,8 @@ Dim oNote As LeaderNote
 				End If
 			End If
 		']
+		
+		
 		
 	'Main Power Switch, UL508A, Stack Light, and J-Box
 		'[

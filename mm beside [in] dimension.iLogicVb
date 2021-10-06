@@ -1,0 +1,70 @@
+﻿Dim oDoc As DrawingDocument = ThisApplication.ActiveDocument
+Dim oDrawDoc As DrawingDocument = ThisDoc.Document
+Dim oDim As GeneralDimension
+Dim oSheet As Sheet = oDrawDoc.ActiveSheet
+Dim oCenters As ObjectsEnumerator
+Dim oCLSettings As AutomatedCenterlineSettings
+
+'Dim oDoc As DrawingDocument = ThisApplication.ActiveDocument
+	oSheet.Activate
+Dim oSheets As Sheets = ThisDoc.Document.Sheets
+'Dim oSheet As Sheet
+Dim oViews As DrawingViews = oSheet.DrawingViews
+
+Dim oView As DrawingView 
+'capture the current active sheet
+
+Dim orientype As ViewOrientationTypeEnum '= oView.Camera.ViewOrientationType
+	'oModelRef = ThisDrawing.Document.Sheets.Item(1).DrawingViews.Item(1).ReferencedFile
+	'ModelFileName = oModelRef.FullFileName
+	'oModelDoc = ThisApplication.Documents.Open(ModelFileName, 0)
+'View Naming
+'		For Each oView In oViews
+'			orientype = oView.Camera.ViewOrientationType
+'			'Scale Views
+'				'[
+				
+'				'MessageBox.Show(oView.)
+'				If orientype = ViewOrientationTypeEnum.kRightViewOrientation Then'> 10 Then 
+'					'MessageBox.Show(iProperties.Mass) why was this zero???
+'					'MessageBox.Show("success")
+'					'oView.Name = "FrontScaleView"
+'					oFrontScaleView = oView.GeneralDimensionType.AddLinear
+'					oView.
+'					'oFrontScaleView.Scale = 1 / 5
+'				'	MsgBox(oFrontScaleView.Width)
+'						'If oFrontScaleView.Width > 15
+'						'	oFrontScaleView.Scale = 1 / 10
+'						'Else
+'						'End If	
+'					'MessageBox.Show(oView.Name)
+'				Else
+'				End If
+'	Next			
+'Default (MTPI)
+'oDoc.StylesManager.ActiveStandardStyle = oDoc.StylesManager.DimensionStyles("Default Standard (MTPI)") 'Then
+'	oDoc.StylesManager.DimensionStyles("Default Standard (MTPI)").LinearPrecision = 41730
+'oDoc.StylesManager.ActiveStandardStyle = oDoc.StylesManager.StandardStyles("Default - mm [in] (ISO)") 'Then
+oDoc.StylesManager.ActiveStandardStyle = oDoc.StylesManager.StandardStyles("Default Standard (MTPI)")
+	oDoc.StylesManager.DimensionStyles("Default (MTPI)").LinearPrecision = 41730
+	oDoc.StylesManager.DimensionStyles("Default (MTPI)").DimensionDualFormat = 41987
+	oDoc.StylesManager.DimensionStyles("Default (MTPI)").HoleNoteDualFormat = 41990
+	oDoc.StylesManager.DimensionStyles("Default (MTPI)").ChamferNoteDualFormat = 41990
+	oDoc.StylesManager.DimensionStyles("Default (MTPI)").BendNoteDualFormat = 41990
+	oDoc.StylesManager.DimensionStyles("Default (MTPI)").PunchNoteDualFormat = 41987
+	'oDoc.StylesManager.TableStyles("Hole Table (MTPI)").DataTextStyle("Note Text(MTPI)").Bold
+	
+	'oDoc.StylesManager.DimensionStyles("Default (MTPI)").hol
+	'oDoc.StylesManager.DimensionStyles("Default (MTPI)").
+	
+	'MessageBox.Show(oDoc.StylesManager.DimensionStyles("Default (MTPI)").HoleNoteDualFormat.value__)
+			'dual dimension enum = 41987
+			'no dual dimension enum = 41991
+	
+'oDoc.StylesManager.ActiveStandardStyle = oDoc.StylesManager.StandardStyles("MT-ISO")
+	'oDoc.StylesManager.DimensionStyles("Default (ISO)").LinearPrecision = 41730
+'Else
+'	MessageBox.Show("nothing changed")
+'End If
+
+		'oDoc.StylesManager.DimensionStyles("Default (MTPI)").AlternateLinearPrecision = 41731'.ToleranceLinearPrecision = 41731
