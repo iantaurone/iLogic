@@ -1,0 +1,331 @@
+'Goal: Update iProperties when a new part is made
+	'Dims	
+		'Dim oDoc As PartDocument = ThisDoc.Document  
+		Dim oDoc As Document = ThisDoc.Document
+		Dim oDoc1 As Document = ThisApplication.ActiveDocument
+		Dim oType As String = oDoc1.DocumentSubType.DocumentSubTypeID
+    	Dim oCompDef As ComponentDefinition
+			oCompDef = oDoc.ComponentDefinition
+			
+	'Get File Name from Browser Tree
+		FileName = ThisDoc.Document.DisplayName
+	
+	'Create missing Custom Properties
+		customPropertySet = ThisDoc.Document.PropertySets.Item("Inventor User Defined Properties")	
+		
+	'Define what the parameters will be
+		oMyParameter = oCompDef.Parameters.UserParameters
+		
+	'-----Part Number-----
+		'[
+		If Left(FileName,9) = iProperties.Value("Project", "Part Number") Then
+			'do nothing
+		Else
+			
+			iProperties.Value("Project", "Part Number") = Left(FileName,9)
+		End If
+		']
+	
+	'-----Update FCE_PartNumber-----
+		'[
+		Try 
+			If iProperties.Value("Custom", "FCE_PartNumber") = iProperties.Value("Project", "Part Number") Then
+				'do nothing
+			Else
+				iProperties.Value("Custom", "FCE_PartNumber") = iProperties.Value("Project", "Part Number")
+			End If
+		Catch 
+			pnProp = iProperties.Value("Project", "Part Number")		
+			customPropertySet.Add(Left(FileName, 9), "FCE_PartNumber")
+		End Try
+		']
+		
+	'-----Update DwgNumber-----
+		'[
+		Try
+			If iProperties.Value("Custom", "DwgNumber") = Left(iProperties.Value("Project", "Part Number"), 5) Then
+				'do nothing
+			Else 
+				iProperties.Value("Custom", "DwgNumber") = Left(iProperties.Value("Project", "Part Number"), 5)
+			End If
+		Catch
+			customPropertySet.Add(Left(iProperties.Value("Project", "Part Number"), 5), "DwgNumber")
+		End Try
+		']
+			
+	'-----Update RevLevel-----	
+		'[
+		Try
+			If iProperties.Value("Custom", "RevLevel") = "1" Then
+				'do nothing
+			Else
+				iProperties.Value("Custom", "RevLevel") = "1"
+			End If
+		Catch
+			customPropertySet.Add("1", "RevLevel")
+		End Try		
+		']
+	
+	'-----Draftsman-----
+		'[
+		Try		
+			If iProperties.Value("Custom", "Draftsman") = ThisApplication.GeneralOptions.UserName Then
+				'do nothing
+			Else
+				iProperties.Value("Custom", "Draftsman") = ThisApplication.GeneralOptions.UserName
+			End If
+		Catch
+			'Make the iProperty
+				customPropertySet.Add("", "Draftsman")
+			
+			'Give it a value
+				iProperties.Value("Custom", "Draftsman") = ThisApplication.GeneralOptions.UserName
+			
+		End Try			
+		']
+	
+	'-----Engineer1-----
+		'[
+		Try
+			If iProperties.Value("Custom", "Engineer1") = ThisApplication.GeneralOptions.UserName Then
+				'do nothing
+			Else
+				iProperties.Value("Custom", "Engineer1") = ThisApplication.GeneralOptions.UserName
+			End If
+		Catch		
+			'Make the iProperty
+				customPropertySet.Add("", "Engineer1")
+				
+			'Give it a value
+				iProperties.Value("Custom", "Engineer1") = ThisApplication.GeneralOptions.UserName					
+		End Try	
+		']
+		
+	'-----Description_AP-----
+		'[
+'		Try 
+'			iProperties.Value("Custom", "DESCRIPTION_AP") = iProperties.Value("Custom", "DESCRIPTION_AP")
+'		Catch
+'			customPropertySet.Add("", "DESCRIPTION_AP")
+'		End Try
+		']
+
+	'-----Description_AP-----
+		'[
+		If iProperties.Value("Project", "DESCRIPTION") = "DESCRIPTION" Then
+			myDescript = InputBox("Prompt", "Title", "Default Entry")
+			iProperties.Value("Project", "DESCRIPTION") = myDescript
+			Try
+				If iProperties.Value("Custom", "DESCRIPTION_AP") = "" Then
+					iProperties.Value("Custom", "DESCRIPTION_AP") = myDescript
+				Else
+				End If
+			Catch
+			End Try
+		Else
+			'Do Nothing
+		End If
+
+		']
+		
+	
+	'-----Adding Tolerances-----
+		'[
+		Try 
+			iProperties.Value("Custom", "PartLinTol0") = iProperties.Value("Custom", "PartLinTol0")
+		Catch
+			customPropertySet.Add("", "PartLinTol0")
+			
+			'Give it a value
+				iProperties.Value("Custom", "PartLinTol0") = "0.03 in"
+				
+		End Try
+		
+		Try 
+			iProperties.Value("Custom", "PartLinTol1") = iProperties.Value("Custom", "PartLinTol1")
+		Catch
+			customPropertySet.Add("", "PartLinTol1")
+			
+			'Give it a value
+				iProperties.Value("Custom", "PartLinTol1") = "0.03 in"
+		End Try
+		
+		Try 
+			iProperties.Value("Custom", "PartLinTol2") = iProperties.Value("Custom", "PartLinTol2")
+		Catch
+			customPropertySet.Add("", "PartLinTol2")
+			
+			'Give it a value
+				iProperties.Value("Custom", "PartLinTol2") = "0.01 in"
+		End Try
+		
+		Try 
+			iProperties.Value("Custom", "PartLinTol3") = iProperties.Value("Custom", "PartLinTol3")
+		Catch
+			customPropertySet.Add("", "PartLinTol3")
+			
+			'Give it a value
+				iProperties.Value("Custom", "PartLinTol3") = "0.005 in"
+		End Try
+		']
+		
+	'----Standard----
+		'[
+		Try 
+			iProperties.Value("Custom", "STANDARD_A") = iProperties.Value("Custom", "STANDARD_A")
+			If oType =  "{9C464203-9BAE-11D3-8BAD-0060B0CE6BB4}" Then 'It is a Sheet Metal part			
+				If iProperties.Value("Custom", "STANDARD_A") = "" Then 'If its empty
+					iProperties.Value("Custom", "STANDARD_A") = SheetMetal.GetActiveStyle
+				Else 'If it already has text in it
+					If iProperties.Value("Custom", "STANDARD_A") = SheetMetal.GetActiveStyle Then
+						'Do nothing
+					Else 'If the texts do not match
+						promptSTANDAND_A = MsgBox("The STANDARD_A already containts the following: " & vbCrLf & "            " & iProperties.Value("Custom", "STANDARD_A")  & vbCrLf &  "Do you want to change it to the current sheet metal type, as shown below? " & vbCrLf & "            " & SheetMetal.GetActiveStyle, MessageBoxButtons.YesNoCancel, "STANDARD_A")
+							If promptSTANDAND_A = vbYes Then
+								iProperties.Value("Custom", "STANDARD_A") = SheetMetal.GetActiveStyle
+							Else
+								'iProperties.Value("Custom", "STANDARD_A") = iProperties.Value("Custom", "STANDARD_A")
+							End If
+					End If
+				End If
+		Else 
+			   
+		End If
+		Catch
+			customPropertySet.Add("", "STANDARD_A")
+			
+			If oType =  "{9C464203-9BAE-11D3-8BAD-0060B0CE6BB4}" Then 'It is a Sheet Metal part			
+				If iProperties.Value("Custom", "STANDARD_A") = "" Then 'If its empty
+					iProperties.Value("Custom", "STANDARD_A") = SheetMetal.GetActiveStyle
+				Else 'If it already has text in it
+					If iProperties.Value("Custom", "STANDARD_A") = SheetMetal.GetActiveStyle Then
+						'Do nothing
+					Else 'If the texts do not match
+						promptSTANDAND_A = MsgBox("The STANDARD_A already containts the following: " & vbCrLf & "            " & iProperties.Value("Custom", "STANDARD_A")  & vbCrLf &  "Do you want to change it to the current sheet metal type, as shown below? " & vbCrLf & "            " & SheetMetal.GetActiveStyle, MessageBoxButtons.YesNoCancel, "STANDARD_A")
+							If promptSTANDAND_A = vbYes Then
+								iProperties.Value("Custom", "STANDARD_A") = SheetMetal.GetActiveStyle
+							Else
+								'iProperties.Value("Custom", "STANDARD_A") = iProperties.Value("Custom", "STANDARD_A")
+							End If
+					End If
+				End If
+		Else 
+			iProperties.Value("Custom", "STANDARD_A") = "***Include Plate / Bar / Tube Thickness and Type (round, square,etc)***"
+		End If
+			
+			'Give it a value
+				
+				
+		End Try
+		']
+		
+	'----Material----
+		'[
+		Try 
+			iProperties.Value("Custom", "MATERIAL_A") = oDoc.ComponentDefinition.Material.Name
+			
+			If oType = "(9C464203-9BAE-11D3-8BAD-0060B0CE6BB4}" Then 'it is a sheet metal part
+				If iProperties.Value("Custom", "MATERIAL_A") = "" Then 'If its empty
+					iProperties.Value("Custom", "MATERIAL_A") = SheetMetal.GetActiveStyle
+					
+				Else 'If it already has text in it
+					If iProperties.Value("Custom", "MATERIAL_A") = SheetMetal.GetActiveStyle Then
+						'Do nothing
+						
+					Else 'If the texts do not match
+						promptMATERIAL_A = MsgBox("---The MATERIAL_A already containts the following: " & vbCrLf & "            " & iProperties.Value("Custom", "MATERIAL_A")  & vbCrLf & "---Do you want to change it to the current sheet metal type, as shown below? " & vbCrLf & "            " & SheetMetal.GetActiveStyle, MessageBoxButtons.YesNoCancel, "MATERIAL_A")
+							
+							If promptMATERIAL_A = vbYes Then
+								iProperties.Value("Custom", "MATERIAL_A") = SheetMetal.GetActiveStyle
+								
+							Else
+								'Do nothing
+							End If
+					End If
+				End If
+				
+			Else 'it is not a sheet metal part
+				If iProperties.Value("Custom", "MATERIAL_A") = "" Then 'If its empty				
+					myparam = InputBox("Prompt", "MATERIAL_A", oDoc.ComponentDefinition.Material.Name)		
+					
+				Else 'If it already has text in it						
+					If iProperties.Value("Custom", "MATERIAL_A") = iProperties.Material Then
+						'Do nothing
+						
+					Else 'If the texts do not match
+						promptMATERIAL_A = MsgBox("---The MATERIAL_A already containts the following: " & vbCrLf & "            " & iProperties.Value("Custom", "MATERIAL_A")  & vbCrLf & "---Do you want to change it to the current sheet metal type, as shown below? " & vbCrLf & "            " & oDoc.ComponentDefinition.Material.Name, MessageBoxButtons.YesNoCancel, "MATERIAL_A")
+							
+							If promptMATERIAL_A = vbYes Then
+								iProperties.Value("Custom", "MATERIAL_A") = oDoc.ComponentDefinition.Material.Name	
+								
+							Else									
+								'Do nothing
+							End If
+					End If
+				End If
+			End If
+			
+		Catch
+			'Create it
+				'customPropertySet.Add("", "MATERIAL_A")
+
+			'Give it a value
+				'iProperties.Value("Custom", "MATERIAL_A") = oDoc.ComponentDefinition.Material.Name		
+		End Try
+		']
+		
+	'----Material Density----
+		'[
+		'MsgBox(ThisDoc.Document.FullFileName.c)
+		Try
+			If ThisDoc.Document.FullFileName.Contains("ipt") Then
+				density = (iProperties.Mass / iProperties.Volume) * 27.68
+		
+				Try 
+					iProperties.Value("Custom", "Density") =  Round(density, 4) & " g/cm^3" 
+					
+				Catch			
+					customPropertySet.Add("", "Density")
+					iProperties.Value("Custom", "Density") =  Round(density, 4) & " g/cm^3" 
+				End Try
+			Else
+				customPropertySet.Add("", "Density")
+			End If
+		Catch
+			'Do nothing
+		End Try
+		']
+		
+	'-----Open iProperties-----
+		'[
+		If Left(FileName, 9) = iProperties.Value("Project", "Part Number") Or iProperties.Value("Custom", "FCE_PartNumber") = iProperties.Value("Project", "Part Number") Or iProperties.Value("Custom", "DwgNumber") = Left(iProperties.Value("Project", "Part Number"), 5) Then
+			'Do nothing
+			
+		Else
+			If ThisDoc.Document.FullFileName.Contains("ipt") Then
+				ThisApplication.CommandManager.ControlDefinitions.Item("PartiPropertiesCmd").Execute
+				
+			Else
+				ThisApplication.CommandManager.ControlDefinitions.Item("AssemblyiPropertiesCmd").Execute
+			End If
+		End If
+		']
+
+	'-----Clear Checker-----	
+		'[
+		Try
+			If iProperties.Value("Custom", "Checker") = "" Then
+				'do nothing
+			Else
+				iProperties.Value("Custom", "Checker") = ""
+			End If
+		Catch
+			'customPropertySet.Add("1", "RevLevel")
+		End Try		
+		']
+
+
+	'-----Show Changes-----
+		'[
+			MsgBox("DESCRIPTION: " & vbCrLf & iProperties.Value("Project", "DESCRIPTION") & vbCrLf & "---------------" & vbCrLf & "PART NUMBER: " & vbCrLf & iProperties.Value("Project", "Part Number") & vbCrLf & "---------------" & vbCrLf & "MATERIAL: " & vbCrLf & iProperties.Value("Custom", "MATERIAL_A") & vbCrLf & "---------------" & vbCrLf & "STANDARD: " & vbCrLf & iProperties.Value("Custom", "STANDARD_A"))
+		']
