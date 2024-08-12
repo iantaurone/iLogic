@@ -1,0 +1,55 @@
+'Goal: Remove any undesired sketch symbols/blocks
+	'Dims
+		Dim oSketchSymLib1 As SketchedSymbolDefinitionLibrary
+		Dim oDrawDoc As DrawingDocument = ThisDoc.Document
+		Dim oDoc As DrawingDocument
+		Dim oSheet As Sheet
+			oDoc = ThisApplication.ActiveDocument
+		i = 1
+
+	'Activate the First Sheet
+		ThisApplication.ActiveDocument.Sheets(1).Activate()
+		
+		For Each oSheet In oDoc.Sheets
+			'If oSheet.
+			'Search each sheet to find and delete the Sketch Symbol
+				For Each oSymbol As SketchedSymbol In oDrawDoc.ActiveSheet.SketchedSymbols
+					Try
+						If oSymbol.Name = "RevisionRef" Then
+							oSymbol.Delete
+						Else
+							'Do nothing
+						End If
+						If oSymbol.Name = "RevisionRef- R attach (CDE)" Then
+							oSymbol.Delete
+						Else
+							'Do nothing
+						End If
+					Catch
+					End Try
+				Next
+			
+				
+'				For Each oTB As TitleBlockDefinition In oDrawDoc.ActiveSheet.TitleBlock'TitleBlock In oDrawDoc.ActiveSheet.TitleBlock
+'					If oTB.Name = "FCE-CDE_size" Then
+'						oTB.Delete	
+						'
+'						'Add Title Block
+'					End If
+					
+'				Next
+					
+					
+				
+			i = i + 1
+			
+				Try
+					ThisApplication.ActiveDocument.Sheets(i).Activate()
+				Catch
+					Exit For
+				End Try
+				
+				Next
+				
+				
+			
