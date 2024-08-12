@@ -1,0 +1,108 @@
+	'GOAL: Replace the old follow-up titles with the new titles
+	'Dims
+		Dim oSketchSymLib1 As SketchedSymbolDefinitionLibrary
+		Dim oDoc As DrawingDocument = ThisDoc.Document
+		'Dim oDoc As DrawingDocument
+		Dim oSheet As Sheet
+			oDoc = ThisApplication.ActiveDocument
+		i = 1
+		
+		
+		'Dim oDoc As DrawingDocument = ThisDoc.Document
+'			 For Each oTitle In ThisDrawing.Document.TitleBlockDefinitions
+'		        If oTitle.IsReferenced = False Then
+'		       		 oTitle.Delete
+'		        End If
+'			 Next
+		Dim modelName = IO.Path.GetFileName(ThisDrawing.ModelDocument.FullFileName)
+		Dim modelType
+		Dim partSht1TB_AB As String
+		Dim partSht1TB_CDE As String
+		Dim partShtFollowTB_CDE As String
+		Dim assySht1TB_AB As String 
+		Dim assySht1TB_CDE As String
+		Dim assyShtFollowTB_CDE As String
+		Dim tbScale' As String 
+		Dim tbText3 As String
+		
+   		Dim oTB1
+     
+	  	Dim oPromptText  
+	    Dim oEachText 
+	    Dim j 
+	   
+    
+    ' search the textbox in definition
+    
+	    
+		'ThisDrawing.ResourceFileName = “C:\_FCE_Work\Libraries\Templates\Standard.idw”
+		
+		Try
+			For i = 1 To oDoc.TitleBlockDefinitions.Count
+				If oDoc.TitleBlockDefinitions.Item(i).Name = "FCE_TBlock_AB_PART" Then
+					partSht1TB_AB = oDoc.TitleBlockDefinitions.Item(i).Name
+					'MsgBox(partSht1TB_AB)
+				Else If oDoc.TitleBlockDefinitions.Item(i).Name = "FCE_TBlock_CDE_PART" Then
+					partSht1TB_CDE = oDoc.TitleBlockDefinitions.Item(i).Name
+					'MsgBox(partSht1TB_CDE)
+				Else If oDoc.TitleBlockDefinitions.Item(i).Name = "FCE_TBlock_CDE_Follow_Pages_PART" Then
+					partShtFollowTB_CDE = oDoc.TitleBlockDefinitions.Item(i).Name
+					'MsgBox(partShtFollowTB_CDE)
+				Else If oDoc.TitleBlockDefinitions.Item(i).Name = "FCE_TBlock_AB" Then
+					assySht1TB_AB = oDoc.TitleBlockDefinitions.Item(i).Name
+					'MsgBox(assySht1TB_AB)
+				Else If oDoc.TitleBlockDefinitions.Item(i).Name = "FCE_TBlock_CDE" Then
+					assySht1TB_CDE = oDoc.TitleBlockDefinitions.Item(i).Name
+					'MsgBox(assySht1TB_CDE)
+				Else If oDoc.TitleBlockDefinitions.Item(i).Name = "FCE_TBlock_CDE_Follow_Pages" Then
+					assyShtFollowTB_CDE = oDoc.TitleBlockDefinitions.Item(i).Name
+					'MsgBox(assyShtFollowTB_CDE)
+				Else
+					' oDoc.TitleBlockDefinitions.Item(i).Delete
+				'msgbox("nothing found")
+				 End If											
+				
+			Next
+		Catch
+			'Not sure
+		End Try
+
+	'Activate the Second Sheet
+		i = 2
+		ThisApplication.ActiveDocument.Sheets(2).Activate()
+		
+		For Each oSheet In oDoc.Sheets
+			
+			If ActiveSheet.TitleBlock = assyShtFollowTB_CDE Then
+				'Do Nothing
+			Else
+				'msgbox("here")
+				'ActiveSheet.TitleBlock..GetResultText(tbScale, tbText3)
+				
+			For j = 1 To oDoc.Sheets(i).TitleBlock.Definition.Sketch.TextBoxes.Count	
+				 oEachText = oDoc.Sheets(i).TitleBlock.Definition.Sketch.TextBoxes(j)
+		        If (oEachText.Text = "Scale") Then
+		            ' found the prompt text we want to copy
+		              oPromptText = oEachText
+		            Exit For
+		        End If
+			Next j
+				 
+				tbScale = oDoc.Sheets(i).TitleBlock.GetResultText(oPromptText)', tbText3)
+				'msgbox(tbScale)
+				ActiveSheet.SetTitleBlock(assyShtFollowTB_CDE, tbScale,"") 'Scale & Text 3
+			End If				
+				
+			i = i + 1
+			
+				Try
+					ThisApplication.ActiveDocument.Sheets(i).Activate()
+					'MsgBox("sheet #" & i)
+				Catch
+					'Exit For
+				End Try
+				
+		Next
+				
+				
+			
