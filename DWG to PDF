@@ -1,0 +1,26 @@
+'Goal: Create a PDF
+	'DIMs
+		Dim PDFAddIn As TranslatorAddIn = ThisApplication.ApplicationAddIns.ItemById("{0AC6FD96-2F4D-42CE-8BE0-8AEA580399E4}")
+		Dim oDoc As Document = ThisApplication.ActiveDocument
+		Dim oContext As TranslationContext = ThisApplication.TransientObjects.CreateTranslationContext
+			oContext.Type = kFileBrowseIOMechanism
+		Dim oOptions As NameValueMap = ThisApplication.TransientObjects.CreateNameValueMap
+		Dim oDataMedium As DataMedium = ThisApplication.TransientObjects.CreateDataMedium
+		
+		Dim P As String = InputBox("Enter the File Path.", "File Location", "")'ThisDoc.Path & "\"
+			If P = "" Then
+				Return 'Exit Prompt
+			End If
+		
+		Dim F As String = InputBox("Enter the PDF name.", "Title", "\" &  iProperties.Value("Project", "PART NUMBER") & "_" & iProperties.Value("Project", "Revision Number"))
+		Dim PFE As String = P & F & ".pdf"
+
+	'Options
+		oOptions.Value("All_Color_AS_Black") = 0
+		oOptions.Value("Sheet_Range") = kPrintAllSheets
+
+	'Create and Save
+		oDataMedium.FileName = PFE
+		PDFAddIn.SaveCopyAs(oDoc, oContext, oOptions, oDataMedium)
+		
+		Process.Start(PFE)
